@@ -1,0 +1,48 @@
+plugins {
+	id 'java-library'
+	id 'eclipse'
+	id 'distribution'
+}
+
+version = '0.1'
+
+repositories {
+	jcenter()
+}
+
+dependencies {
+	compileOnly fileTree("${cbHome}/tomcat/webapps/cb/WEB-INF/lib") { include '*.jar' }
+	compileOnly fileTree("${cbHome}/tomcat/lib") { include '*.jar' }
+}
+
+sourceSets {
+    main {
+        resources {
+            srcDirs "src/main/java"
+			includes = ["**/*.zip"]
+        }
+    }
+}
+
+
+distributions {
+	main {
+		contents {
+
+			into("WEB-INF/lib") {
+				from (project.configurations.runtimeClasspath)
+				from jar
+			}
+			from("src/main/web")
+		}
+	}
+	src {
+		contents {
+			from("/") {
+				include("src/**")
+				include("build.gradle")
+				include("settings.gradle")
+			}
+		}
+	}
+}
