@@ -1,0 +1,94 @@
+##
+## The Velocity template to render a com.intland.codebeamer.wiki.plugins.ChecklistPlugin body into a table of checklist items
+##
+
+<link rel="stylesheet" href="${request.contextPath}${uiGenerator.getVersionedURL('/config/templates/wiki-plugin/ChecklistPlugin.css')}" type="text/css" media="all" />
+
+<table class="checklist tbd">
+	<tbody>
+		#foreach($checklistItem in $checklist)
+			<tr class="checklistItem #if($!checklistItem.header)header#end">
+				<td #if($!checklistItem.pinned)class="checklistItemPinned"#end></td>
+				
+				#if($!checklistItem.header)
+					<td class="checklistHeader" colspan=2>
+						#if($!checklistItem.description)
+							<a href="#" class="checklistItemDescription show"></a>
+						#end
+						
+						$textFormatter.format($checklistItem.name, "W", $wikiContext)
+					</td>
+				#else
+					<td class="checklistItemChecked #if($!checklistItem.mandatory)mandatory#end"><input type="checkbox" #if($!checklistItem.checked)checked#end disabled/></td>
+					<td class="checklistItemLabel">
+						#if($!checklistItem.description)
+							<a href="#" class="checklistItemDescription show" title="Show/Hide description"></a>
+						#end
+						
+						#if($!checklistItem.priority)
+							<img src="${request.contextPath}/images/space.gif" class="sprite-priority-${checklistItem.priority.id}-gif"
+									title="${checklistItem.priority.name}" alt="${checklistItem.priority.name}" style="width: 16px; height: 16px; margin-right: 3px; "/>
+						#end
+						
+						#if($!checklistItem.status)
+						    <span class="checklistItemStatus $!{checklistItem.status.style}" title="$!checklistItem.status.description">$textFormatter.format($checklistItem.status.name, "W", $wikiContext)</span>
+						#end
+						
+						$textFormatter.format($checklistItem.name, "W", $wikiContext)
+						
+						#if ($!checklistItem.endDate)
+							## The due date will appear on the right side of the item row, in one of the following colors:
+							## Red: The date is in the past.
+						    ## Orange: The date is today’s date.
+							## Grey: The date is in the future, or the checklist item is checked (checked items will always be grey, regardless of when the due date is).
+							
+							#if($!checklistItem.checked || !$checklistItem.endDate.before($tomorrow))
+								#set($dueState = "")
+							#elseif($checklistItem.endDate.before($today))
+								#set($dueState = "overdue")
+							#else
+								#set($dueState = "dueToday")
+							#end
+							
+							<span class="checklistItemDue $dueState">
+								<span class="checklistItemDueDate $dueState">$textFormatter.formatDate($user, $checklistItem.endDate)</span>
+							</span>
+						#end
+						
+					</td>
+				#end
+			</tr>
+
+			#if($!checklistItem.description)
+				<tr class="checklistItemDescription"> 
+					<td colspan=2></td>
+					<td class="checklistItemDescription">$textFormatter.format($checklistItem.description, "W", $wikiContext)</td>
+				</tr>
+			#end
+		#end
+	</tbody>
+</table>
+
+## TODO support expanding/collapsing headers according to  
+## <a href="https://okapya.atlassian.net/wiki/spaces/CHKDOC5/pages/1965752439/Creating+and+manipulating+headers">Expanding and collapsing headers<a>
+## e.g. by using the treetable() JQuery plugin 
+
+<script type="text/javascript">
+	$('a.checklistItemDescription').click(function(event) {
+		event.preventDefault();
+		
+		var elem = $(this);
+		var desc = elem.closest('tr.checklistItem').next('tr.checklistItemDescription');
+		
+		if (elem.hasClass('show')) {
+			desc.show();
+		} else {
+			desc.hide();
+		}
+		
+		elem.toggleClass('show hide');
+		
+		return false;
+	});	
+  
+</script>
