@@ -11,8 +11,6 @@
  */
 package com.intland.codebeamer.extensions.jira;
 
-import static com.intland.codebeamer.controller.jira.JiraRestClient.decodeDate;
-import static com.intland.codebeamer.controller.jira.JiraRestClient.encodeDate;
 import static com.intland.codebeamer.extensions.jira.ChecklistForJiraMarkup.cb2checklist;
 import static com.intland.codebeamer.extensions.jira.ChecklistForJiraMarkup.checklist2cb;
 import static com.intland.codebeamer.manager.util.TrackerSyncConfigurationDto.DESCRIPTION;
@@ -21,15 +19,12 @@ import static com.intland.codebeamer.manager.util.TrackerSyncConfigurationDto.NA
 import static com.intland.codebeamer.manager.util.TrackerSyncConfigurationDto.STYLE;
 import static com.intland.codebeamer.persistence.util.TrackerItemFieldHandler.PRIORITY_LABEL_ID;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.CHECKED;
-import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.END_DATE;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.HEADER;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.MANDATORY;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.PINNED;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.PRIORITY;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.STATUS;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.STATUS_NAME;
-import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.decodeIsoDate;
-import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.encodeIsoDate;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.unwrapChecklist;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.wrapChecklist;
 
@@ -95,7 +90,6 @@ public class ChecklistForJiraField extends AbstractJsonController {
 	public static final String GLOBAL_ID    = "globalItemId";	// ChecklistForJira V5 and newer
 	public static final String PRIORITY_ID  = "priorityId";
 	public static final String ASSIGNEE_IDS = "assigneeIds";
-	public static final String DUE_DATE  	= "dueDate";
 	public static final String NONE 	 	= "none";
 	public static final String DESC_SEP  	= "\n>>";
 
@@ -402,12 +396,6 @@ public class ChecklistForJiraField extends AbstractJsonController {
 						} else {
 							item.remove(PRIORITY);
 						}
-					} else if ("due date changed".equals(attrib)) {
-						if (dueDate != null) {
-							item.set(END_DATE, TextNode.valueOf(encodeIsoDate(dueDate)));
-						} else {
-							item.remove(END_DATE);
-						}
 					} else if ("assigned".equals(attrib)) {
 						ArrayNode assignees = item.putArray(ASSIGNEE_IDS);
 						if (assigneeIds != null) {
@@ -655,19 +643,6 @@ public class ChecklistForJiraField extends AbstractJsonController {
 						}
 					}
 
-					// Convert Jira specific dueDate into ISO endDate
-					String dueDate = getString(itemNode.remove(DUE_DATE), null);
-					if (dueDate != null) {
-						try {
-							Date endDate = decodeDate(dueDate);
-							if (endDate != null) {
-								itemNode.set(END_DATE, TextNode.valueOf(encodeIsoDate(endDate)));
-							}
-						} catch(Throwable ex) {
-							logger.warn("Could not convert dueDate: " + dueDate, ex);
-						}
-					}
-
 					// Convert ChecklistForJira status in ChecklistPlugin status
 					JsonNode status = itemNode.remove(STATUS);
 					if (status != null && status.isObject()) {
@@ -727,17 +702,6 @@ public class ChecklistForJiraField extends AbstractJsonController {
 					Integer priorityId = getJiraPriorityId(tracker, itemNode.remove(PRIORITY));
 					if (priorityId != null) {
 						itemNode.set(PRIORITY_ID, IntNode.valueOf(priorityId.intValue()));
-					}
-
-					// Convert ISO endDate into Jira specific dueDate
-					String endDate = getString(itemNode.remove(END_DATE), null);
-					if (endDate != null) {
-						try {
-							Date dueDate = decodeIsoDate(endDate);
-							itemNode.set(DUE_DATE, TextNode.valueOf(encodeDate(dueDate)));
-						} catch(Throwable ex) {
-							logger.warn("Could not convert endDate: " + endDate, ex);
-						}
 					}
 
 					// Only the status id is needed

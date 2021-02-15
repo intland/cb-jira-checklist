@@ -11,7 +11,6 @@
  */
 package com.intland.codebeamer.wiki.plugins;
 
-import static com.intland.codebeamer.controller.support.ResponseViewHandler.ISO_DATE_TIME;
 import static com.intland.codebeamer.manager.util.TrackerSyncConfigurationDto.DESCRIPTION;
 import static com.intland.codebeamer.manager.util.TrackerSyncConfigurationDto.NAME;
 import static com.intland.codebeamer.manager.util.TrackerSyncConfigurationDto.STYLE;
@@ -79,7 +78,6 @@ public class ChecklistPlugin extends AbstractCodeBeamerWikiPlugin {
 	public static final String CHECKED 	 	= "checked";
 	public static final String PRIORITY		= "priority";
 	public static final String STATUS  	 	= "status";
-	public static final String END_DATE 	= "endDate";
 
 	public static final List<String> PRIORITIES = Collections.unmodifiableList(Arrays.asList("None", "Highest", "High", "Normal", "Low", "Lowest"));
 
@@ -122,25 +120,6 @@ public class ChecklistPlugin extends AbstractCodeBeamerWikiPlugin {
 	 */
 	public static JsonNode unwrapChecklist(String markup) {
 		return BODY.parseJSON(StringUtils.substringBetween(markup, PLUGIN_HEADER, PLUGIN_FOOTER));
-	}
-
-	/**
-	 * Encode a {@link Date}, e.g. {@link #END_DATE}, into a checklist item ISO date/time string value
-	 * @param date to encode into an ISO date/time string
-	 * @return the ISO date/time string, or null, if the date was null
-	 */
-	public static String encodeIsoDate(Date date) {
-		return date != null ? ISO_DATE_TIME.print(date.getTime()) : null;
-	}
-
-	/**
-	 * Decode an ISO date/time string, e.g. {@link #END_DATE}, into a {@link Date}
-	 * @param dateStr should be an ISO date/time string, or null
-	 * @return the decoded {@link Date}, or null, if the dateStr was blank
-	 * @throws IllegalArgumentException if the dateStr is not an ISO date/time string
-	 */
-	public static Date decodeIsoDate(String dateStr) throws IllegalArgumentException {
-		return StringUtils.isNotBlank(dateStr) ? new Date(ISO_DATE_TIME.parseMillis(dateStr)) : null;
 	}
 
 	/**
@@ -246,15 +225,6 @@ public class ChecklistPlugin extends AbstractCodeBeamerWikiPlugin {
 				Object status = item.get(STATUS);
 				if (status != null) {
 					item.put(STATUS, getStatus(status));
-				}
-
-				String endDate = AttributedDto.toString(item.remove(END_DATE));
-				if (endDate != null) {
-					try {
-						item.put(END_DATE, decodeIsoDate(endDate));
-					} catch(Throwable ex) {
-						logger.warn("Invalid endDate: " + endDate, ex);
-					}
 				}
 
 				return true;

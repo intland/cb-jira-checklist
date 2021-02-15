@@ -35,26 +35,6 @@
 						#end
 						
 						$textFormatter.format($checklistItem.name, "W", $wikiContext)
-						
-						#if ($!checklistItem.endDate)
-							## The due date will appear on the right side of the item row, in one of the following colors:
-							## Red: The date is in the past.
-						    ## Orange: The date is today’s date.
-							## Grey: The date is in the future, or the checklist item is checked (checked items will always be grey, regardless of when the due date is).
-							
-							#if($!checklistItem.checked || !$checklistItem.endDate.before($tomorrow))
-								#set($dueState = "")
-							#elseif($checklistItem.endDate.before($today))
-								#set($dueState = "overdue")
-							#else
-								#set($dueState = "dueToday")
-							#end
-							
-							<span class="checklistItemDue $dueState">
-								<span class="checklistItemDueDate $dueState">$textFormatter.formatDate($user, $checklistItem.endDate)</span>
-							</span>
-						#end
-						
 					</td>
 				#end
 			</tr>

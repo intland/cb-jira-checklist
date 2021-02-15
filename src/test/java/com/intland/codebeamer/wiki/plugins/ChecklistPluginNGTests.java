@@ -18,15 +18,12 @@ import static com.intland.codebeamer.manager.util.TrackerSyncConfigurationDto.NA
 import static com.intland.codebeamer.persistence.util.PersistenceUtils.getToday;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.BODY;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.CHECKED;
-import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.END_DATE;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.HEADER;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.MANDATORY;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.PINNED;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.PLUGIN_FOOTER;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.PLUGIN_HEADER;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.STATUS;
-import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.decodeIsoDate;
-import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.encodeIsoDate;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.getPriority;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.getStatus;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.prepareChecklist;
@@ -63,7 +60,6 @@ import com.intland.codebeamer.persistence.dto.UserDto;
 import com.intland.codebeamer.persistence.dto.base.NamedDto;
 import com.intland.codebeamer.servlet.CBPaths;
 import com.intland.codebeamer.wiki.CodeBeamerWikiContext;
-import com.intland.codebeamer.wiki.plugins.ChecklistPlugin;
 
 
 /**
@@ -92,10 +88,6 @@ public class ChecklistPluginNGTests  {
 
 		if (status != null) {
 			item.set(STATUS, TextNode.valueOf(status));
-		}
-
-		if (dueDate != null) {
-			item.set(END_DATE, TextNode.valueOf(encodeIsoDate(dueDate)));
 		}
 
 		if (pinned) {
@@ -204,21 +196,9 @@ public class ChecklistPluginNGTests  {
 		assertTrue(item_.isObject(), "Unwrapped item is object");
 		assertEquals(item_, item, "Unwapped checklist item");
 
-		JsonNode endDate = item_.get(END_DATE);
-		assertNotNull(endDate, "Unwapped checklist item endDate");
-		assertTrue(endDate.isTextual(), "Unwapped checklist item endDate must be a string");
-
-		Date decodedDate = decodeIsoDate(endDate.asText());
-		assertNotNull(decodedDate, "Decoded item endDate");
-		assertEquals(decodedDate, tomorrow, "Decoded item endDate must be tomorrow");
-
 		List<Map<String,Object>> prepared = prepareChecklist(unwrapped);
 		assertNotNull(prepared, "Prepared checklist");
 		assertEquals(prepared.size(), unwrapped.size(), "Prepared checklist size");
-
-		Map<String,Object> item__ = prepared.get(0);
-		assertNotNull(item__, "Prepared checklist item");
-		assertEquals(item__.get(END_DATE), decodedDate, "Prepared checklist item end date");
 	}
 
 	@Test(dependsOnMethods = "testWrapUnwrapAndPrepareChecklist")
@@ -298,9 +278,6 @@ public class ChecklistPluginNGTests  {
 
 				assertNotNull(status, idx + ". item must have a status");
 				assertTrue(status.hasClass("blocked"), "Status must be blocked");
-
-				assertNotNull(dueDate, idx + ". item must have a due date");
-				assertTrue(dueDate.hasClass("dueToday") || dueDate.hasClass("overdue"), "Item must be (over)due today");
 			}
 		}
 

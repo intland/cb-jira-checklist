@@ -17,7 +17,6 @@ import static com.intland.codebeamer.controller.AbstractJsonController.getString
 import static com.intland.codebeamer.controller.AbstractJsonController.jsonMapper;
 import static com.intland.codebeamer.extensions.jira.ChecklistForJiraField.ASSIGNEE_IDS;
 import static com.intland.codebeamer.extensions.jira.ChecklistForJiraField.DESC_SEP;
-import static com.intland.codebeamer.extensions.jira.ChecklistForJiraField.DUE_DATE;
 import static com.intland.codebeamer.extensions.jira.ChecklistForJiraField.GLOBAL_ID;
 import static com.intland.codebeamer.extensions.jira.ChecklistForJiraField.IS_HEADER;
 import static com.intland.codebeamer.extensions.jira.ChecklistForJiraField.OPTION;
@@ -36,7 +35,6 @@ import static com.intland.codebeamer.manager.util.TrackerSyncConfigurationDto.NA
 import static com.intland.codebeamer.persistence.util.PersistenceUtils.getToday;
 import static com.intland.codebeamer.persistence.util.TrackerItemFieldHandler.PRIORITY_LABEL_ID;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.CHECKED;
-import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.END_DATE;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.HEADER;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.MANDATORY;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.PINNED;
@@ -66,7 +64,6 @@ import com.fasterxml.jackson.databind.node.IntNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.intland.codebeamer.controller.jira.JiraImportController;
-import com.intland.codebeamer.controller.jira.JiraRestClient;
 import com.intland.codebeamer.controller.jira.JiraTrackerSyncConfig;
 import com.intland.codebeamer.extensions.jira.ChecklistForJiraField.Change;
 import com.intland.codebeamer.extensions.jira.ChecklistForJiraField.Checklist;
@@ -192,10 +189,6 @@ public class ChecklistForJiraFieldNGTests {
 			item.set(STATUS, item.objectNode().set(ID, TextNode.valueOf(statusOption.getStyle())));
 		}
 
-		if (dueDate != null) {
-			item.set(DUE_DATE, TextNode.valueOf(JiraRestClient.encodeDate(dueDate)));
-		}
-
 		if (header) {
 			item.set(IS_HEADER, BooleanNode.TRUE);
 		}
@@ -232,7 +225,6 @@ public class ChecklistForJiraFieldNGTests {
 			assertEquals(getString(cbItem, DESCRIPTION), "An __Example__ checklist item", "Converted CB checklist description");
 			assertEquals(getInteger(cbItem.get(PRIORITY), ID), Integer.valueOf(2), "Converted CB checklist priority id");
 			assertEquals(getString(cbItem.get(STATUS), NAME), "In Progress", "Converted CB checklist status name");
-			assertEquals(getString(cbItem, END_DATE), ChecklistPlugin.encodeIsoDate(tomorrow), "Converted CB checklist end date");
 
 			assertTrue (getBoolean(cbItem, PINNED),    "Converted CB checklist item pinned");
 			assertFalse(getBoolean(cbItem, HEADER),    "Converted CB checklist item header");
@@ -261,7 +253,6 @@ public class ChecklistForJiraFieldNGTests {
 			assertEquals(getString(item, NAME), "Say *Hallo*" + DESC_SEP + "\nOtherwise you are a total **Jerk**!", "Converted Jira checklist name");
 			assertEquals(getInteger(item, PRIORITY_ID), Integer.valueOf(1), "Converted Jira checklist priority id");
 			assertEquals(getString(item.get(STATUS), ID), "notApplicable", "Converted Jira checklist status id");
-			assertEquals(getString(item, DUE_DATE), JiraRestClient.encodeDate(tomorrow), "Converted Jira checklist due date");
 
 			assertTrue (getBoolean(item, OPTION),    "Converted Jira checklist item option");
 			assertTrue (getBoolean(item, IS_HEADER), "Converted Jira checklist item header");
@@ -292,7 +283,6 @@ public class ChecklistForJiraFieldNGTests {
 			assertEquals(getString(item, NAME), "Do *something*" + DESC_SEP + "\nAn **Example** checklist item", "Exported Jira checklist name");
 			assertEquals(getInteger(item, PRIORITY_ID), Integer.valueOf(1), "Exported Jira checklist priority id");
 			assertEquals(getString(item.get(STATUS), ID), "inProgress", "Exported Jira checklist status id");
-			assertEquals(getString(item, DUE_DATE), JiraRestClient.encodeDate(tomorrow), "Exported Jira checklist due date");
 			assertEquals (getInteger(item, GLOBAL_ID), Integer.valueOf(7),   "Exporteded Jira checklist item option");
 
 			assertTrue(getBoolean(item, IS_HEADER), "Exported Jira checklist item header");
@@ -396,7 +386,6 @@ public class ChecklistForJiraFieldNGTests {
 		assertNull(getString(target, DESCRIPTION), "New Item description");
 		assertEquals(getInteger(target.get(PRIORITY), ID), Integer.valueOf(2), "New Item priority");
 		assertEquals(getString(target.get(STATUS), NAME), "Blocked", "New Item status");
-		assertEquals(getString(target, END_DATE), ChecklistPlugin.encodeIsoDate(dueDate), "New Item end date");
 		assertTrue(getBoolean(target, MANDATORY), "New Item is mandatory");
 		assertFalse(getBoolean(target, CHECKED), "New Item is checked");
 
@@ -435,7 +424,6 @@ public class ChecklistForJiraFieldNGTests {
 		assertEquals(getString(target, DESCRIPTION), "As self extracting Zip", "Updated Item description");
 		assertEquals(getInteger(target.get(PRIORITY), ID), Integer.valueOf(3), "Updated Item priority");
 		assertEquals(getString(target.get(STATUS), NAME), "Blocked", "Updated Item status");
-		assertEquals(getString(target, END_DATE), ChecklistPlugin.encodeIsoDate(dueDate), "Updated Item end date");
 		assertFalse(getBoolean(target, MANDATORY), "Updated Item mandatory");
 		assertFalse(getBoolean(target, CHECKED), "Updated Item is checked");
 
