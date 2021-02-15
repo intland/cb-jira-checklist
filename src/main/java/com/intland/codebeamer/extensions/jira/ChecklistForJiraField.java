@@ -17,7 +17,6 @@ import static com.intland.codebeamer.manager.util.TrackerSyncConfigurationDto.DE
 import static com.intland.codebeamer.manager.util.TrackerSyncConfigurationDto.ID;
 import static com.intland.codebeamer.manager.util.TrackerSyncConfigurationDto.NAME;
 import static com.intland.codebeamer.manager.util.TrackerSyncConfigurationDto.STYLE;
-import static com.intland.codebeamer.persistence.util.TrackerItemFieldHandler.PRIORITY_LABEL_ID;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.CHECKED;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.HEADER;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.MANDATORY;
@@ -105,41 +104,6 @@ public class ChecklistForJiraField extends AbstractJsonController {
 		}
 
 		return null;
-	}
-
-	/**
-	 * Get the codeBeamer priority of the specified tracker, that is mapped to the specified JIRA project priority
-	 * @param tracker is the tracker configuration, where JIRA project priorities are mapped to codeBeamer priorities
-	 * @param idOrName is a JIRA priority id orname
-	 * @return a JsonNode representing the CB priority, or null, if there is no such CB priority
-	 */
-	public static JsonNode getPriority(JiraTrackerSyncConfig tracker, Object idOrName) {
-		JsonNode result = null;
-
-		if (tracker != null && idOrName != null) {
-			Map<Object,TrackerChoiceOptionDto> priorityMapping = tracker.getChoiceValueMapping(PRIORITY_LABEL_ID);
-			if (priorityMapping != null) {
-				TrackerChoiceOptionDto priority = priorityMapping.get(idOrName);
-				if (priority != null && priority.getId() != null) {
-					if (priority.getName() != null) {
-						ObjectNode priorityNode = jsonMapper.createObjectNode();
-
-						priorityNode.set(ID,   IntNode.valueOf(priority.getId().intValue()));
-						priorityNode.set(NAME, TextNode.valueOf(priority.getName()));
-
-						if (priority.getDescription() != null) {
-							priorityNode.set(DESCRIPTION, TextNode.valueOf(priority.getDescription()));
-						}
-
-						result = priorityNode;
-					} else {
-						result = IntNode.valueOf(priority.getId().intValue());
-					}
-				}
-			}
-		}
-
-		return result;
 	}
 
 	/**
