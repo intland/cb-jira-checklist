@@ -25,15 +25,6 @@
 							<a href="#" class="checklistItemDescription show" title="Show/Hide description"></a>
 						#end
 						
-						#if($!checklistItem.priority)
-							<img src="${request.contextPath}/images/space.gif" class="sprite-priority-${checklistItem.priority.id}-gif"
-									title="${checklistItem.priority.name}" alt="${checklistItem.priority.name}" style="width: 16px; height: 16px; margin-right: 3px; "/>
-						#end
-						
-						#if($!checklistItem.status)
-						    <span class="checklistItemStatus $!{checklistItem.status.style}" title="$!checklistItem.status.description">$textFormatter.format($checklistItem.status.name, "W", $wikiContext)</span>
-						#end
-						
 						$textFormatter.format($checklistItem.name, "W", $wikiContext)
 					</td>
 				#end

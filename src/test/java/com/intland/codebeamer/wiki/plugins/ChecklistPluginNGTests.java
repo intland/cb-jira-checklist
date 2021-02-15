@@ -23,9 +23,6 @@ import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.MANDATORY;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.PINNED;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.PLUGIN_FOOTER;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.PLUGIN_HEADER;
-import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.STATUS;
-import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.getPriority;
-import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.getStatus;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.prepareChecklist;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.unwrapChecklist;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.wrapChecklist;
@@ -55,9 +52,7 @@ import com.fasterxml.jackson.databind.node.BooleanNode;
 import com.fasterxml.jackson.databind.node.IntNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.intland.codebeamer.persistence.dto.TrackerChoiceOptionDto;
 import com.intland.codebeamer.persistence.dto.UserDto;
-import com.intland.codebeamer.persistence.dto.base.NamedDto;
 import com.intland.codebeamer.servlet.CBPaths;
 import com.intland.codebeamer.wiki.CodeBeamerWikiContext;
 
@@ -70,8 +65,8 @@ import com.intland.codebeamer.wiki.CodeBeamerWikiContext;
 @Test(groups = {"plugins"})
 public class ChecklistPluginNGTests  {
 
-	public static ObjectNode createChecklistItem(Integer id, String name, String description, String status, Date dueDate,
-												 boolean pinned, boolean header, boolean mandatory, boolean checked) {
+	public static ObjectNode createChecklistItem(Integer id, String name, String description, boolean pinned, boolean header,
+												 boolean mandatory, boolean checked) {
 		assertNotNull(name, "Checklist item name required");
 
 		ObjectNode item = jsonMapper.createObjectNode();
@@ -84,10 +79,6 @@ public class ChecklistPluginNGTests  {
 
 		if (description != null) {
 			item.set(DESCRIPTION, TextNode.valueOf(description));
-		}
-
-		if (status != null) {
-			item.set(STATUS, TextNode.valueOf(status));
 		}
 
 		if (pinned) {
@@ -109,75 +100,12 @@ public class ChecklistPluginNGTests  {
 		return item;
 	}
 
-	@Test
-	public void testGetPriority() throws Exception {
-		NamedDto priority = getPriority(null);
-		assertNull(priority, "Null priority");
-
-		priority = getPriority(Integer.valueOf(0));
-		assertNull(priority, "priority=0");
-
-		priority = getPriority(Integer.valueOf(9));
-		assertNotNull(priority, "priority=9");
-		assertEquals(priority.getId(), Integer.valueOf(5), "priority=9");
-
-		priority = getPriority(" ");
-		assertNull(priority, "priority=\" \"");
-
-		priority = getPriority("LOW");
-		assertNotNull(priority, "priority=\"LOW\"");
-		assertEquals(priority.getId(), Integer.valueOf(4), "priority=\"LOW\"" );
-		assertEquals(priority.getName(), "LOW", "priority=\"LOW\"" );
-
-		priority = getPriority(new NamedDto());
-		assertNull(priority, "priority={}");
-
-		priority = getPriority(new NamedDto(Integer.valueOf(2), ""));
-		assertNotNull(priority, "priority={id:2, name:\"\"}");
-		assertEquals(priority.getId(), Integer.valueOf(2), "priority={id:2, name:\"\"}" );
-		assertEquals(priority.getName(), "High", "priority={id:2, name:\"\"}" );
-
-		priority = getPriority(new NamedDto(null, "HIGH"));
-		assertNotNull(priority, "priority={name:\"HIGH\"}");
-		assertEquals(priority.getId(), Integer.valueOf(2), "priority={name:\"HIGH\"}" );
-		assertEquals(priority.getName(), "HIGH", "priority={name:\"HIGH\"}");
-	}
-
-	@Test
-	public void testGetStatus() throws Exception {
-		TrackerChoiceOptionDto status = getStatus(null);
-		assertNull(status, "Null status");
-
-		status = getStatus(Integer.valueOf(3));
-		assertNull(status, "Numeric status");
-
-		status = getStatus("In Progress");
-		assertNotNull(status, "In Progress");
-		assertEquals(status.getName(), "In Progress", "In Progress name");
-		assertEquals(status.getStyle(), "inProgress", "In Progress style");
-
-		status = getStatus("blocked");
-		assertNotNull(status, "blocked");
-		assertEquals(status.getName(), "Blocked", "blocked name");
-		assertEquals(status.getStyle(), "blocked", "blocked style");
-
-		status = getStatus("Undefined");
-		assertNotNull(status, "Undefined");
-		assertEquals(status.getName(), "Undefined", "Undefined name");
-		assertNull(status.getStyle(), "Undefined style");
-
-		status = getStatus(new NamedDto(Integer.valueOf(5), "Resolved"));
-		assertNotNull(status, "Resolved");
-		assertEquals(status.getId(), Integer.valueOf(5), "Resolved name");
-		assertEquals(status.getName(), "Resolved", "Resolved name");
-		assertNull(status.getStyle(), "Resolved style");
-	}
 
 	@Test
 	public void testWrapUnwrapAndPrepareChecklist() throws Exception {
 		Date	   tomorrow  = new Date(getToday(1).getTime());
 		ArrayNode  checklist = jsonMapper.createArrayNode();
-		ObjectNode item      = createChecklistItem(null, "Do something", "Example checklist item", "inProgress", tomorrow, true, false, true, false);
+		ObjectNode item      = createChecklistItem(null, "Do something", "Example checklist item", true, false, true, false);
 
 		checklist.add(item);
 
@@ -209,12 +137,11 @@ public class ChecklistPluginNGTests  {
 		UserDto user = mock(UserDto.class);
 		when(context.getUser()).thenReturn(user);
 		
-		Date	   today  		= new Date();
 		ArrayNode  checklist 	= jsonMapper.createArrayNode();
-		ObjectNode globalHeader = createChecklistItem(Integer.valueOf(1), "!5 Global items", "These are __global__ options", null, null, true, true, false, false);
-		ObjectNode globalItem 	= createChecklistItem(Integer.valueOf(2), "Check regulations", "Check regulatory compliance", null, null, true, false, true, false);
-		ObjectNode localHeader  = createChecklistItem(Integer.valueOf(4), "!5 Item specific", "These are __local__ items", null, null, false, true, false, false);
-		ObjectNode localItem    = createChecklistItem(Integer.valueOf(4), "Design solution", null, "blocked", today, false, false, true, false);
+		ObjectNode globalHeader = createChecklistItem(Integer.valueOf(1), "!5 Global items", "These are __global__ options", true, true, false, false);
+		ObjectNode globalItem 	= createChecklistItem(Integer.valueOf(2), "Check regulations", "Check regulatory compliance", true, false, true, false);
+		ObjectNode localHeader  = createChecklistItem(Integer.valueOf(4), "!5 Item specific", "These are __local__ items", false, true, false, false);
+		ObjectNode localItem    = createChecklistItem(Integer.valueOf(4), "Design solution", null, false, false, true, false);
 
 		checklist.add(globalHeader);
 		checklist.add(globalItem);
@@ -273,11 +200,8 @@ public class ChecklistPluginNGTests  {
 				assertNull(status, idx + ". item must not have a status");
 				assertNull(dueDate, idx + ". item must not have a due date");
 			} else {
-				// "4. item must not have description, but a status and due date instead
+				// "4. item must not have description
 				assertNull(descLink, idx + ". item must have a description link");
-
-				assertNotNull(status, idx + ". item must have a status");
-				assertTrue(status.hasClass("blocked"), "Status must be blocked");
 			}
 		}
 

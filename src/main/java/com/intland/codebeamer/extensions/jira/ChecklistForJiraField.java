@@ -22,9 +22,6 @@ import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.CHECKED;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.HEADER;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.MANDATORY;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.PINNED;
-import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.PRIORITY;
-import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.STATUS;
-import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.STATUS_NAME;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.unwrapChecklist;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.wrapChecklist;
 
@@ -88,7 +85,6 @@ public class ChecklistForJiraField extends AbstractJsonController {
 	public static final String IS_HEADER 	= "isHeader";
 	public static final String OPTION    	= "option"; 		// ChecklistForJira V4 and older
 	public static final String GLOBAL_ID    = "globalItemId";	// ChecklistForJira V5 and newer
-	public static final String PRIORITY_ID  = "priorityId";
 	public static final String ASSIGNEE_IDS = "assigneeIds";
 	public static final String NONE 	 	= "none";
 	public static final String DESC_SEP  	= "\n>>";
@@ -106,20 +102,6 @@ public class ChecklistForJiraField extends AbstractJsonController {
 			}
 
 			return TextNode.valueOf(name);
-		}
-
-		return null;
-	}
-
-	/**
-	 * Find a predefined checklist item status by id(style) or name
-	 * @param idOrName of the status
-	 * @return the predefined checklist item status, or null
-	 */
-	public static JsonNode getChecklistStatus(String idOrName) {
-		TrackerChoiceOptionDto status = ChecklistPlugin.getStatus(idOrName);
-		if (status != null) {
-			return getStatus(status.getName(), status.getStyle());
 		}
 
 		return null;
@@ -154,34 +136,6 @@ public class ChecklistForJiraField extends AbstractJsonController {
 						result = IntNode.valueOf(priority.getId().intValue());
 					}
 				}
-			}
-		}
-
-		return result;
-	}
-
-	/**
-	 * Get the JIRA priority ID mapped to the specified codeBeamer priority
-	 * @param tracker is the tracker configuration, where JIRA project priorities are mapped to codeBeamer priorities
-	 * @param priority is the codeBeamer priority
-	 * @return the JIRA priority ID mapped to the specified codeBeamer priority, or null, if there is no appropriate JIRA priority id
-	 */
-	public static Integer getJiraPriorityId(JiraTrackerSyncConfig tracker, JsonNode priority) {
-		Integer result = null;
-
-		if (tracker != null && priority != null) {
-			// We must only call ChecklistPlugin.getPriority(), if there is no priority id, otherwise the id might be truncated!
-			Integer id = getInteger(priority, ID);
-			if (id == null) {
-				NamedDto checklistPrio = ChecklistPlugin.getPriority(priority);
-				if (checklistPrio != null) {
-					id = checklistPrio.getId();
-				}
-			}
-
-			TrackerChoiceOptionDto jiraPrio = tracker.getExportOption(PRIORITY_LABEL_ID, id);
-			if (jiraPrio != null) {
-				result = jiraPrio.getId();
 			}
 		}
 
@@ -382,20 +336,6 @@ public class ChecklistForJiraField extends AbstractJsonController {
 						item.set(MANDATORY, BooleanNode.TRUE);
 					} else if ("optional".equals(attrib)) {
 						item.set(MANDATORY, BooleanNode.FALSE);
-					} else if ("status changed".equals(attrib)) {
-						JsonNode statusNode = getChecklistStatus(status);
-						if (statusNode != null) {
-							item.set(STATUS, statusNode);
-						} else {
-							item.remove(STATUS);
-						}
-					} else if ("priority changed".equals(attrib)) {
-						JsonNode prioNode = ChecklistForJiraField.getPriority(tracker, priority);
-						if (prioNode != null) {
-							item.set(PRIORITY, prioNode);
-						} else {
-							item.remove(PRIORITY);
-						}
 					} else if ("assigned".equals(attrib)) {
 						ArrayNode assignees = item.putArray(ASSIGNEE_IDS);
 						if (assigneeIds != null) {
@@ -631,35 +571,6 @@ public class ChecklistForJiraField extends AbstractJsonController {
 							itemNode.remove(DESCRIPTION);
 						}
 					}
-
-					Integer priorityId = getInteger(itemNode.remove(PRIORITY_ID), null);
-					if (priorityId != null) {
-						JsonNode priority = getPriority(tracker, priorityId);
-						if (priority != null) {
-							itemNode.set(PRIORITY, priority);
-						} else {
-							// Keep unmaped Jira priority ID
-							itemNode.set(PRIORITY_ID, IntNode.valueOf(priorityId.intValue()));
-						}
-					}
-
-					// Convert ChecklistForJira status in ChecklistPlugin status
-					JsonNode status = itemNode.remove(STATUS);
-					if (status != null && status.isObject()) {
-						String statusId = getString(status, ID);
-
-						// Ignore NONE status and add missing status name
-						if (StringUtils.isNotBlank(statusId) && !StringUtils.equalsIgnoreCase(statusId, NONE)) {
-							String statusName = getString(status, NAME);
-							if (statusName == null) {
-								statusName = STATUS_NAME.get(statusId);
-							} else {
-								statusName = checklist2cb(check4ByteChars(controller, statusName));
-							}
-
-							itemNode.set(STATUS, getStatus(StringUtils.defaultIfBlank(statusName, statusId), statusId));
-						}
-					}
 				}
 			}
 		}
@@ -698,17 +609,6 @@ public class ChecklistForJiraField extends AbstractJsonController {
 					}
 
 					itemNode.set(NAME, TextNode.valueOf(cb2checklist(name)));
-
-					Integer priorityId = getJiraPriorityId(tracker, itemNode.remove(PRIORITY));
-					if (priorityId != null) {
-						itemNode.set(PRIORITY_ID, IntNode.valueOf(priorityId.intValue()));
-					}
-
-					// Only the status id is needed
-					TrackerChoiceOptionDto status = ChecklistPlugin.getStatus(itemNode.remove(STATUS));
-					if (status != null && StringUtils.isNotBlank(status.getStyle())) {
-						itemNode.set(STATUS, itemNode.objectNode().put(ID, status.getStyle()));
-					}
 				}
 			}
 		}

@@ -76,17 +76,6 @@ public class ChecklistPlugin extends AbstractCodeBeamerWikiPlugin {
 	public static final String HEADER 		= "header";
 	public static final String MANDATORY 	= "mandatory";
 	public static final String CHECKED 	 	= "checked";
-	public static final String PRIORITY		= "priority";
-	public static final String STATUS  	 	= "status";
-
-	public static final List<String> PRIORITIES = Collections.unmodifiableList(Arrays.asList("None", "Highest", "High", "Normal", "Low", "Lowest"));
-
-	public static final Map<String,String> STATUS_NAME = new TreeMap<String,String>();
-	static {
-		STATUS_NAME.put("notApplicable", "N/A");
-		STATUS_NAME.put("inProgress", 	 "In Progress");
-		STATUS_NAME.put("blocked", 		 "Blocked");
-	}
 
 	/**
 	 * A helper to encode/decode the Checklist body to/from JSON
@@ -123,93 +112,6 @@ public class ChecklistPlugin extends AbstractCodeBeamerWikiPlugin {
 	}
 
 	/**
-	 * Convert the specified priority, that can either be a priority object, a priority id or a priority name into a named priority
-	 * @param priority to convert into a named priority
-	 * @return the priority as as {@link NamedDto}, or null
-	 */
-	public static NamedDto getPriority(Object priority) {
-		String name = StringUtils.trimToNull(PersistenceUtils.getName(priority));
-		if (StringUtils.isNumeric(name)) {
-			name = null;
-		}
-
-		Integer id = PersistenceUtils.getId(priority);
-		if (id == null && name != null) {
-			id = Integer.valueOf(PRIORITIES.indexOf(StringUtils.capitalize(name.toLowerCase())));
-		}
-
-		if (id != null && id.intValue() > 0) {
-			int idx = Math.min(PRIORITIES.size() - 1, id.intValue());
-
-			return new NamedDto(Integer.valueOf(idx), StringUtils.defaultIfBlank(name, PRIORITIES.get(idx)));
-		}
-
-		return null;
-	}
-
-	private static boolean setStatus(TrackerChoiceOptionDto status, String idOrName) {
-		if (status != null && (idOrName = StringUtils.trimToNull(idOrName)) != null) {
-			for (Map.Entry<String,String> entry : STATUS_NAME.entrySet()) {
-				if (StringUtils.equalsIgnoreCase(idOrName, entry.getKey()) ||
-					StringUtils.equalsIgnoreCase(idOrName, entry.getValue())) {
-					status.setStyle(entry.getKey());
-					status.setName(entry.getValue());
-
-					return true;
-				}
-			}
-		}
-
-		return false;
-	}
-
-	/**
-	 * Convert the specified status, that can either be a status object, a status id or a status name into a status option
-	 * @param status to convert into a status option
-	 * @return the status as as {@link TrackerChoiceOptionDto}, or null
-	 */
-	public static TrackerChoiceOptionDto getStatus(Object status) {
-		TrackerChoiceOptionDto result = new TrackerChoiceOptionDto(PersistenceUtils.getId(status), PersistenceUtils.getName(status));
-
-		if (status != null) {
-			if (status instanceof Number) {
-				result.setName(null);
-			} else if (status instanceof Map) {
-				Map<?,?> map = (Map<?,?>) status;
-
-				result.setDescription(AttributedDto.toString(map.get(DESCRIPTION)));
-				result.setStyle(AttributedDto.toString(map.get(STYLE)));
-
-			} else if (status instanceof JsonNode) {
-				JsonNode node = (JsonNode) status;
-
-				if (node.isObject()) {
-					result.setDescription(AbstractJsonController.getString(node, DESCRIPTION));
-					result.setStyle(AbstractJsonController.getString(node, STYLE));
-				} else if (!node.isTextual()) {
-					result.setName(null);
-				}
-			} else if (status instanceof TrackerChoiceOptionDto) {
-				TrackerChoiceOptionDto other = (TrackerChoiceOptionDto)status;
-
-				result.setDescription(other.getDescription());
-				result.setStyle(other.getStyle());
-
-			} else if (status instanceof DescribeableDto) {
-				result.setDescription(((DescribeableDto)status).getDescription());
-			}
-		}
-
-		if (StringUtils.isBlank(result.getName())) {
-			result = null;
-		} else if (StringUtils.isBlank(result.getStyle())) {
-			setStatus(result, result.getName());
-		}
-
-		return result;
-	}
-
-	/**
 	 * Check and prepare the specified checklist item for rendering
 	 * @return true if the item is good for rendering, otherwise false
 	 */
@@ -217,16 +119,6 @@ public class ChecklistPlugin extends AbstractCodeBeamerWikiPlugin {
 		if (item != null) {
 			String name = AttributedDto.toString(item.get(NAME));
 			if (StringUtils.isNotBlank(name)) {
-				Object priority = item.get(PRIORITY);
-				if (priority != null) {
-					item.put(PRIORITY, getPriority(priority));
-				}
-
-				Object status = item.get(STATUS);
-				if (status != null) {
-					item.put(STATUS, getStatus(status));
-				}
-
 				return true;
 			}
 		}

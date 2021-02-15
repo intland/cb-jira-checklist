@@ -79,52 +79,5 @@ a.checklistItemDescription.hide {
 	background-image: url("../../../../../images/newskin/action/diff-collapse.png");
 }
 
-span.checklistItemStatus {
-	font-weight: bold;
-	text-align: center;
-	text-transform: uppercase;
-	white-space: nowrap;
-	border: 1px solid silver;
-	padding: 1px 2px 1px 2px; 
-	margin-right: 5px;
-	border-color: #babdb6;
-	color: #888a85;
-}
-
-span.checklistItemStatus.blocked {
-	border-color: #e8a29b;
-	color: #d04437;
-}
-
-span.checklistItemStatus.inProgress {
-	border-color: #729fcf;
-	color: #3465a4;
-}
-
-span.checklistItemDue {
-	white-space: nowrap;
-	margin-left: 1em;
-	padding: 1px 2px 1px 18px; 
-	background-image: url("../../../../../images/newskin/queries/icon_recent.png");
-	background-repeat: no-repeat;
-}
-
-span.checklistItemDue.overdue:after {
-	content: "!";
-	color: red;
-}
-
-span.checklistItemDueDate {
-	background-color: #eeeeec;
-}
-
-span.checklistItemDueDate.dueToday {
-	background-color: #f4d58e;
-}
-
-span.checklistItemDueDate.overdue {
-	background-color: #f9b8b8;
-}
-
 
 

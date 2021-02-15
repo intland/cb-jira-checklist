@@ -20,14 +20,10 @@ import static com.intland.codebeamer.extensions.jira.ChecklistForJiraField.DESC_
 import static com.intland.codebeamer.extensions.jira.ChecklistForJiraField.GLOBAL_ID;
 import static com.intland.codebeamer.extensions.jira.ChecklistForJiraField.IS_HEADER;
 import static com.intland.codebeamer.extensions.jira.ChecklistForJiraField.OPTION;
-import static com.intland.codebeamer.extensions.jira.ChecklistForJiraField.PRIORITY_ID;
 import static com.intland.codebeamer.extensions.jira.ChecklistForJiraField.getChanges;
 import static com.intland.codebeamer.extensions.jira.ChecklistForJiraField.getChecklist;
-import static com.intland.codebeamer.extensions.jira.ChecklistForJiraField.getChecklistStatus;
 import static com.intland.codebeamer.extensions.jira.ChecklistForJiraField.getChecklists;
-import static com.intland.codebeamer.extensions.jira.ChecklistForJiraField.getJiraPriorityId;
 import static com.intland.codebeamer.extensions.jira.ChecklistForJiraField.getOriginalItem;
-import static com.intland.codebeamer.extensions.jira.ChecklistForJiraField.getPriority;
 import static com.intland.codebeamer.extensions.jira.ChecklistForJiraField.setChecklist;
 import static com.intland.codebeamer.manager.util.TrackerSyncConfigurationDto.DESCRIPTION;
 import static com.intland.codebeamer.manager.util.TrackerSyncConfigurationDto.ID;
@@ -38,8 +34,6 @@ import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.CHECKED;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.HEADER;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.MANDATORY;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.PINNED;
-import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.PRIORITY;
-import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.STATUS;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
@@ -123,45 +117,8 @@ public class ChecklistForJiraFieldNGTests {
 		tracker.setOptionExport(PRIORITY_LABEL_ID, cb2jira);
 	}
 
-	@Test
-	public void testChecklistStatus() throws Exception {
-		JsonNode inProgress = getChecklistStatus("In Progress");
-		assertNotNull(inProgress, "Default checklist status \"In Progress\"");
-
-		JsonNode blocked = getChecklistStatus("blocked");
-		assertNotNull(blocked, "Default checklist status blocked");
-
-		JsonNode notApplicable = getChecklistStatus("n/a");
-		assertNotNull(notApplicable, "Default checklist status N/A");
-	}
-
-	@Test
-	public void testImportExportPriority() throws Exception {
-		JsonNode normal = getPriority(tracker, "Medium");
-		assertNotNull(normal, "Priority for Jira Medium");
-		assertEquals(getInteger(normal, ID), Integer.valueOf(3), "Normal priority id");
-		assertEquals(getString(normal, NAME), "Normal", "Normal priority name");
-
-		Integer jiraMediumId = getJiraPriorityId(tracker, normal);
-		assertNotNull(jiraMediumId, "Jira priority mapped to 3 (Normal)");
-		assertEquals(jiraMediumId,  Integer.valueOf(2), "Jira priority mapped to 3 (Normal)");
-
-		jiraMediumId = getJiraPriorityId(tracker, TextNode.valueOf("normal"));
-		assertNotNull(jiraMediumId, "Jira priority mapped to \"normal\"");
-		assertEquals(jiraMediumId,  Integer.valueOf(2), "Jira priority mapped to \"normal\"");
-
-		JsonNode high = getPriority(tracker, Integer.valueOf(1));
-		assertNotNull(high, "Priority for Jira High Prio id");
-		assertEquals(getInteger(high, ID), Integer.valueOf(2), "High priority id");
-		assertEquals(getString(high, NAME), "High", "High priority name");
-
-		Integer jiraHighId = getJiraPriorityId(tracker, high);
-		assertNotNull(jiraHighId, "Jira priority mapped to 2 (High)");
-		assertEquals(jiraHighId,  Integer.valueOf(1), "Jira priority mapped to 2 (High)");
-	}
-
-	public static ObjectNode createChecklistItem(Integer id, String name, String description, Integer prio, String status, Date dueDate,
-													boolean option, boolean header, boolean mandatory, boolean checked) {
+	public static ObjectNode createChecklistItem(Integer id, String name, String description, boolean option, boolean header, boolean mandatory,
+													boolean checked) {
 		assertNotNull(name, "Checklist item name required");
 
 		ObjectNode item = jsonMapper.createObjectNode();
@@ -180,15 +137,6 @@ public class ChecklistForJiraFieldNGTests {
 			item.set(NAME, TextNode.valueOf(name + DESC_SEP + "\n" + description));
 		}
 
-		if (prio != null) {
-			item.set(PRIORITY_ID, IntNode.valueOf(prio.intValue()));
-		}
-
-		TrackerChoiceOptionDto statusOption = ChecklistPlugin.getStatus(status);
-		if (statusOption != null) {
-			item.set(STATUS, item.objectNode().set(ID, TextNode.valueOf(statusOption.getStyle())));
-		}
-
 		if (header) {
 			item.set(IS_HEADER, BooleanNode.TRUE);
 		}
@@ -205,11 +153,10 @@ public class ChecklistForJiraFieldNGTests {
 	}
 
 
-	@Test(dependsOnMethods = {"testChecklistStatus", "testImportExportPriority"})
+	@Test
 	public void testJira2cb() throws Exception {
-		Date	   tomorrow  = new Date(getToday(1).getTime());
 		ArrayNode  checklist = jsonMapper.createArrayNode();
-		ObjectNode item      = createChecklistItem(Integer.valueOf(1), "Do *something*", "An **Example** checklist item", Integer.valueOf(1), "inProgress", tomorrow, true, false, true, false);
+		ObjectNode item      = createChecklistItem(Integer.valueOf(1), "Do *something*", "An **Example** checklist item", true, false, true, false);
 
 		checklist.add(item);
 
@@ -223,8 +170,6 @@ public class ChecklistForJiraFieldNGTests {
 
 			assertEquals(getString(cbItem, NAME), "Do ''something''", "Converted CB checklist name");
 			assertEquals(getString(cbItem, DESCRIPTION), "An __Example__ checklist item", "Converted CB checklist description");
-			assertEquals(getInteger(cbItem.get(PRIORITY), ID), Integer.valueOf(2), "Converted CB checklist priority id");
-			assertEquals(getString(cbItem.get(STATUS), NAME), "In Progress", "Converted CB checklist status name");
 
 			assertTrue (getBoolean(cbItem, PINNED),    "Converted CB checklist item pinned");
 			assertFalse(getBoolean(cbItem, HEADER),    "Converted CB checklist item header");
@@ -233,13 +178,12 @@ public class ChecklistForJiraFieldNGTests {
 		}
 	}
 
-	@Test(dependsOnMethods = {"testChecklistStatus", "testImportExportPriority"})
+	@Test
 	public void testCb2jira() throws Exception {
 		Date	   tomorrow    = new Date(getToday(1).getTime());
 		ArrayNode  cbChecklist = jsonMapper.createArrayNode();
-		ObjectNode cbItem      = ChecklistPluginNGTests.createChecklistItem(Integer.valueOf(123), "Say ''Hallo''", "Otherwise you are a total __Jerk__!",  "n/a", tomorrow, true, true, true, false);
+		ObjectNode cbItem      = ChecklistPluginNGTests.createChecklistItem(Integer.valueOf(123), "Say ''Hallo''", "Otherwise you are a total __Jerk__!",  true, true, true, false);
 
-		cbItem.set(PRIORITY, getPriority(tracker, "High"));
 		cbChecklist.add(cbItem);
 
 		JsonNode checklist = adapter.cb2jira(tracker, cbChecklist);
@@ -251,8 +195,7 @@ public class ChecklistForJiraFieldNGTests {
 			assertTrue(item != null && item.isObject(), "Converted Jira checklist item");
 
 			assertEquals(getString(item, NAME), "Say *Hallo*" + DESC_SEP + "\nOtherwise you are a total **Jerk**!", "Converted Jira checklist name");
-			assertEquals(getInteger(item, PRIORITY_ID), Integer.valueOf(1), "Converted Jira checklist priority id");
-			assertEquals(getString(item.get(STATUS), ID), "notApplicable", "Converted Jira checklist status id");
+
 
 			assertTrue (getBoolean(item, OPTION),    "Converted Jira checklist item option");
 			assertTrue (getBoolean(item, IS_HEADER), "Converted Jira checklist item header");
@@ -263,9 +206,8 @@ public class ChecklistForJiraFieldNGTests {
 
 	@Test(dependsOnMethods = {"testJira2cb", "testCb2jira"})
 	public void testImportExportChecklist() throws Exception {
-		Date	   tomorrow  = new Date(getToday(1).getTime());
 		ArrayNode  checklist = jsonMapper.createArrayNode();
-		ObjectNode item_     = createChecklistItem(Integer.valueOf(7), "Do *something*", "An **Example** checklist item", Integer.valueOf(1), "inProgress", tomorrow, true, true, true, true);
+		ObjectNode item_     = createChecklistItem(Integer.valueOf(7), "Do *something*", "An **Example** checklist item", true, true, true, true);
 
 		checklist.add(item_);
 
@@ -281,8 +223,6 @@ public class ChecklistForJiraFieldNGTests {
 			assertTrue(item != null && item.isObject(), "Exported Jira checklist item");
 
 			assertEquals(getString(item, NAME), "Do *something*" + DESC_SEP + "\nAn **Example** checklist item", "Exported Jira checklist name");
-			assertEquals(getInteger(item, PRIORITY_ID), Integer.valueOf(1), "Exported Jira checklist priority id");
-			assertEquals(getString(item.get(STATUS), ID), "inProgress", "Exported Jira checklist status id");
 			assertEquals (getInteger(item, GLOBAL_ID), Integer.valueOf(7),   "Exporteded Jira checklist item option");
 
 			assertTrue(getBoolean(item, IS_HEADER), "Exported Jira checklist item header");
@@ -294,7 +234,7 @@ public class ChecklistForJiraFieldNGTests {
 	public static Checklist createChecklist() {
 		Date	   tomorrow  = new Date(getToday(1).getTime());
 		Checklist  checklist = new Checklist(null);
-		ObjectNode item      = ChecklistPluginNGTests.createChecklistItem(Integer.valueOf(123), "Deploy to ''staging'' server", "Required __before__ deploying to production!", "n/a", tomorrow, true, false, true, true);
+		ObjectNode item      = ChecklistPluginNGTests.createChecklistItem(Integer.valueOf(123), "Deploy to ''staging'' server", "Required __before__ deploying to production!", true, false, true, true);
 
 		checklist.getItems().add(item);
 
@@ -343,12 +283,10 @@ public class ChecklistForJiraFieldNGTests {
 		target = checklist.getItem(change.getName());
 		assertNotNull(target, "Target item for Change #1");
 		assertFalse(getBoolean(target, CHECKED), "Target item unchecked before change");
-		assertNotNull(target.get(STATUS), "Target item status before change");
 
 		change.apply(tracker, target);
 
 		assertTrue(getBoolean(target, CHECKED), "Target item checked after change");
-		assertNull(target.get(STATUS), "Target item status after change");
 
 		Date dueDate = Change.decodeDueDate("05/Feb/21");
 		assertNotNull(dueDate, "Decoded Due Date 05/Feb/21");
@@ -384,8 +322,6 @@ public class ChecklistForJiraFieldNGTests {
 		assertFalse(getBoolean(target, HEADER), "Item is header");
 		assertEquals(getString(target, NAME), change.getName(), "New Item name");
 		assertNull(getString(target, DESCRIPTION), "New Item description");
-		assertEquals(getInteger(target.get(PRIORITY), ID), Integer.valueOf(2), "New Item priority");
-		assertEquals(getString(target.get(STATUS), NAME), "Blocked", "New Item status");
 		assertTrue(getBoolean(target, MANDATORY), "New Item is mandatory");
 		assertFalse(getBoolean(target, CHECKED), "New Item is checked");
 
@@ -422,8 +358,6 @@ public class ChecklistForJiraFieldNGTests {
 		assertFalse(getBoolean(target, HEADER), "Item is header");
 		assertEquals(getString(target, NAME), change.getName(), "Updated Item name");
 		assertEquals(getString(target, DESCRIPTION), "As self extracting Zip", "Updated Item description");
-		assertEquals(getInteger(target.get(PRIORITY), ID), Integer.valueOf(3), "Updated Item priority");
-		assertEquals(getString(target.get(STATUS), NAME), "Blocked", "Updated Item status");
 		assertFalse(getBoolean(target, MANDATORY), "Updated Item mandatory");
 		assertFalse(getBoolean(target, CHECKED), "Updated Item is checked");
 
@@ -447,7 +381,7 @@ public class ChecklistForJiraFieldNGTests {
 		assertFalse(cache.containsKey(field.getId()), "Field checklist cached");
 
 		ArrayNode checklist = jsonMapper.createArrayNode();
-		checklist.add(ChecklistPluginNGTests.createChecklistItem(null, "!4 Test items", null, null, null, true, true, false, false));
+		checklist.add(ChecklistPluginNGTests.createChecklistItem(null, "!4 Test items", null, true, true, false, false));
 
 		field.setValue(item, ChecklistPlugin.wrapChecklist(checklist));
 
@@ -467,7 +401,7 @@ public class ChecklistForJiraFieldNGTests {
 		assertEquals(checklist_, checklist, "Cached field checklist");
 		assertTrue(cache.containsKey(field.getId()), "Field checklist cached");
 
-		checklist.add(ChecklistPluginNGTests.createChecklistItem(null, "Test item", null, null, null, true, false, true, false));
+		checklist.add(ChecklistPluginNGTests.createChecklistItem(null, "Test item", null, true, false, true, false));
 
 		setChecklist(item, field, checklist, importer);
 
