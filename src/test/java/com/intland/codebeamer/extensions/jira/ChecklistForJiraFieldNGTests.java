@@ -68,7 +68,6 @@ import com.fasterxml.jackson.databind.node.TextNode;
 import com.intland.codebeamer.controller.jira.JiraImportController;
 import com.intland.codebeamer.controller.jira.JiraRestClient;
 import com.intland.codebeamer.controller.jira.JiraTrackerSyncConfig;
-import com.intland.codebeamer.extensions.jira.ChecklistForJiraField;
 import com.intland.codebeamer.extensions.jira.ChecklistForJiraField.Change;
 import com.intland.codebeamer.extensions.jira.ChecklistForJiraField.Checklist;
 import com.intland.codebeamer.manager.util.ImportStatistics;
@@ -77,7 +76,6 @@ import com.intland.codebeamer.manager.util.TrackerItemHistoryConfiguration;
 import com.intland.codebeamer.persistence.dto.TrackerChoiceOptionDto;
 import com.intland.codebeamer.persistence.dto.TrackerItemDto;
 import com.intland.codebeamer.persistence.dto.TrackerLayoutLabelDto;
-import com.intland.codebeamer.wiki.plugins.ChecklistPlugin;
 
 import net.sf.mpxj.CustomField;
 

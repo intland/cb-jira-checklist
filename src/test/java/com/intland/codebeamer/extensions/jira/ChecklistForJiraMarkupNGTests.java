@@ -13,11 +13,9 @@ package com.intland.codebeamer.extensions.jira;
 
 import org.testng.annotations.Test;
 
-import com.intland.codebeamer.controller.jira.ChecklistForJiraMarkup;
-
 import static org.testng.Assert.*;
 
-import static com.intland.codebeamer.controller.jira.ChecklistForJiraMarkup.*;
+import static com.intland.codebeamer.extensions.jira.ChecklistForJiraMarkup.*;
 
 /**
  * Tests for the special {@link ChecklistForJiraMarkup} converter between

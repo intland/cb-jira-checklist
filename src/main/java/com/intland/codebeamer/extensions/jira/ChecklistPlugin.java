@@ -11,6 +11,12 @@
  */
 package com.intland.codebeamer.extensions.jira;
 
+import static com.intland.codebeamer.controller.support.ResponseViewHandler.ISO_DATE_TIME;
+import static com.intland.codebeamer.manager.util.TrackerSyncConfigurationDto.DESCRIPTION;
+import static com.intland.codebeamer.manager.util.TrackerSyncConfigurationDto.NAME;
+import static com.intland.codebeamer.manager.util.TrackerSyncConfigurationDto.STYLE;
+import static com.intland.codebeamer.utils.AnchoredPeriod.TODAY;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -25,9 +31,7 @@ import org.apache.velocity.VelocityContext;
 
 import com.ecyrd.jspwiki.WikiContext;
 import com.ecyrd.jspwiki.plugin.PluginException;
-
 import com.fasterxml.jackson.databind.JsonNode;
-
 import com.intland.codebeamer.controller.AbstractJsonController;
 import com.intland.codebeamer.manager.util.TrackerSyncConfigurationDto;
 import com.intland.codebeamer.persistence.dto.AttributedDto;
@@ -39,12 +43,6 @@ import com.intland.codebeamer.persistence.dto.base.NamedDto;
 import com.intland.codebeamer.persistence.util.PersistenceUtils;
 import com.intland.codebeamer.utils.AnchoredPeriod.Edge;
 import com.intland.codebeamer.wiki.plugins.base.AbstractCodeBeamerWikiPlugin;
-
-import static com.intland.codebeamer.controller.support.ResponseViewHandler.ISO_DATE_TIME;
-import static com.intland.codebeamer.manager.util.TrackerSyncConfigurationDto.NAME;
-import static com.intland.codebeamer.manager.util.TrackerSyncConfigurationDto.DESCRIPTION;
-import static com.intland.codebeamer.manager.util.TrackerSyncConfigurationDto.STYLE;
-import static com.intland.codebeamer.utils.AnchoredPeriod.TODAY;
 
 
 /**

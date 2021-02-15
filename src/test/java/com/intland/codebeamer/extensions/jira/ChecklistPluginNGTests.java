@@ -16,22 +16,22 @@ import static com.intland.codebeamer.manager.util.TrackerSyncConfigurationDto.DE
 import static com.intland.codebeamer.manager.util.TrackerSyncConfigurationDto.ID;
 import static com.intland.codebeamer.manager.util.TrackerSyncConfigurationDto.NAME;
 import static com.intland.codebeamer.persistence.util.PersistenceUtils.getToday;
-import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.BODY;
-import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.CHECKED;
-import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.END_DATE;
-import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.HEADER;
-import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.MANDATORY;
-import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.PINNED;
-import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.PLUGIN_FOOTER;
-import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.PLUGIN_HEADER;
-import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.STATUS;
-import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.decodeIsoDate;
-import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.encodeIsoDate;
-import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.getPriority;
-import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.getStatus;
-import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.prepareChecklist;
-import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.unwrapChecklist;
-import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.wrapChecklist;
+import static com.intland.codebeamer.extensions.jira.ChecklistPlugin.BODY;
+import static com.intland.codebeamer.extensions.jira.ChecklistPlugin.CHECKED;
+import static com.intland.codebeamer.extensions.jira.ChecklistPlugin.END_DATE;
+import static com.intland.codebeamer.extensions.jira.ChecklistPlugin.HEADER;
+import static com.intland.codebeamer.extensions.jira.ChecklistPlugin.MANDATORY;
+import static com.intland.codebeamer.extensions.jira.ChecklistPlugin.PINNED;
+import static com.intland.codebeamer.extensions.jira.ChecklistPlugin.PLUGIN_FOOTER;
+import static com.intland.codebeamer.extensions.jira.ChecklistPlugin.PLUGIN_HEADER;
+import static com.intland.codebeamer.extensions.jira.ChecklistPlugin.STATUS;
+import static com.intland.codebeamer.extensions.jira.ChecklistPlugin.decodeIsoDate;
+import static com.intland.codebeamer.extensions.jira.ChecklistPlugin.encodeIsoDate;
+import static com.intland.codebeamer.extensions.jira.ChecklistPlugin.getPriority;
+import static com.intland.codebeamer.extensions.jira.ChecklistPlugin.getStatus;
+import static com.intland.codebeamer.extensions.jira.ChecklistPlugin.prepareChecklist;
+import static com.intland.codebeamer.extensions.jira.ChecklistPlugin.unwrapChecklist;
+import static com.intland.codebeamer.extensions.jira.ChecklistPlugin.wrapChecklist;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
@@ -63,7 +63,6 @@ import com.intland.codebeamer.persistence.dto.UserDto;
 import com.intland.codebeamer.persistence.dto.base.NamedDto;
 import com.intland.codebeamer.servlet.CBPaths;
 import com.intland.codebeamer.wiki.CodeBeamerWikiContext;
-import com.intland.codebeamer.wiki.plugins.ChecklistPlugin;
 
 
 /**

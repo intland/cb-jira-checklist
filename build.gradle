@@ -4,15 +4,17 @@ plugins {
 	id 'distribution'
 }
 
-version = '0.1'
+version = '0.9'
 
 repositories {
 	jcenter()
 }
 
 dependencies {
-	implementation fileTree("${cbHome}/tomcat/webapps/cb/WEB-INF/lib") { include '*.jar' }
-	implementation fileTree("${cbHome}/tomcat/lib") { include '*.jar' }
+	compileOnly fileTree("${cbHome}/tomcat/webapps/cb/WEB-INF/lib") { include '*.jar' }
+	compileOnly fileTree("${cbHome}/tomcat/lib") { include '*.jar' }
+	testImplementation fileTree("${cbHome}/tomcat/webapps/cb/WEB-INF/lib") { include '*.jar' }
+	testImplementation fileTree("${cbHome}/tomcat/lib") { include '*.jar' }
 	testImplementation  'org.testng:testng:6.14.3'
 	testImplementation 'org.mockito:mockito-core:1.10.19'
 }
@@ -51,4 +53,12 @@ distributions {
 			}
 		}
 	}
+}
+
+distZip {
+	includeEmptyDirs = false
+    eachFile { file ->
+        String path = file.relativePath
+        file.setPath(path.substring(path.indexOf("/")+1,path.length()))
+    }
 }
