@@ -9,7 +9,7 @@
  * it only in accordance with the terms of the license agreement
  * you entered into with Intland.
  */
-package com.intland.codebeamer.extensions.jira;
+package com.intland.codebeamer.wiki.plugins;
 
 import static com.intland.codebeamer.controller.support.ResponseViewHandler.ISO_DATE_TIME;
 import static com.intland.codebeamer.manager.util.TrackerSyncConfigurationDto.DESCRIPTION;

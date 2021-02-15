@@ -35,13 +35,13 @@ import static com.intland.codebeamer.manager.util.TrackerSyncConfigurationDto.ID
 import static com.intland.codebeamer.manager.util.TrackerSyncConfigurationDto.NAME;
 import static com.intland.codebeamer.persistence.util.PersistenceUtils.getToday;
 import static com.intland.codebeamer.persistence.util.TrackerItemFieldHandler.PRIORITY_LABEL_ID;
-import static com.intland.codebeamer.extensions.jira.ChecklistPlugin.CHECKED;
-import static com.intland.codebeamer.extensions.jira.ChecklistPlugin.END_DATE;
-import static com.intland.codebeamer.extensions.jira.ChecklistPlugin.HEADER;
-import static com.intland.codebeamer.extensions.jira.ChecklistPlugin.MANDATORY;
-import static com.intland.codebeamer.extensions.jira.ChecklistPlugin.PINNED;
-import static com.intland.codebeamer.extensions.jira.ChecklistPlugin.PRIORITY;
-import static com.intland.codebeamer.extensions.jira.ChecklistPlugin.STATUS;
+import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.CHECKED;
+import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.END_DATE;
+import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.HEADER;
+import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.MANDATORY;
+import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.PINNED;
+import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.PRIORITY;
+import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.STATUS;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
@@ -76,6 +76,8 @@ import com.intland.codebeamer.manager.util.TrackerItemHistoryConfiguration;
 import com.intland.codebeamer.persistence.dto.TrackerChoiceOptionDto;
 import com.intland.codebeamer.persistence.dto.TrackerItemDto;
 import com.intland.codebeamer.persistence.dto.TrackerLayoutLabelDto;
+import com.intland.codebeamer.wiki.plugins.ChecklistPlugin;
+import com.intland.codebeamer.wiki.plugins.ChecklistPluginNGTests;
 
 import net.sf.mpxj.CustomField;
 
