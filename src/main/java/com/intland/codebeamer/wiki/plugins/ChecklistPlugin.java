@@ -168,9 +168,6 @@ public class ChecklistPlugin extends AbstractCodeBeamerWikiPlugin {
 
 		VelocityContext velocityContext = getDefaultVelocityContextFromContext(context);
 		velocityContext.put("checklist", prepareChecklist(BODY.parseJSON(body)));
-		velocityContext.put("today", 	 new Date());
-		velocityContext.put("tomorrow",  TODAY.getEdge(Edge.End, null, user.getTimeZone()));
-
 		return renderPluginTemplate("ChecklistPlugin.vm", velocityContext);
 	}
 

@@ -12,10 +12,8 @@
 package com.intland.codebeamer.wiki.plugins;
 
 import static com.intland.codebeamer.controller.AbstractJsonController.jsonMapper;
-import static com.intland.codebeamer.manager.util.TrackerSyncConfigurationDto.DESCRIPTION;
 import static com.intland.codebeamer.manager.util.TrackerSyncConfigurationDto.ID;
 import static com.intland.codebeamer.manager.util.TrackerSyncConfigurationDto.NAME;
-import static com.intland.codebeamer.persistence.util.PersistenceUtils.getToday;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.BODY;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.CHECKED;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.HEADER;
@@ -36,7 +34,6 @@ import static org.testng.Assert.assertTrue;
 
 import java.io.File;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -65,7 +62,7 @@ import com.intland.codebeamer.wiki.CodeBeamerWikiContext;
 @Test(groups = {"plugins"})
 public class ChecklistPluginNGTests  {
 
-	public static ObjectNode createChecklistItem(Integer id, String name, String description, boolean pinned, boolean header,
+	public static ObjectNode createChecklistItem(Integer id, String name, boolean pinned, boolean header,
 												 boolean mandatory, boolean checked) {
 		assertNotNull(name, "Checklist item name required");
 
@@ -76,10 +73,6 @@ public class ChecklistPluginNGTests  {
 		}
 
 		item.set(NAME, TextNode.valueOf(name));
-
-		if (description != null) {
-			item.set(DESCRIPTION, TextNode.valueOf(description));
-		}
 
 		if (pinned) {
 			item.set(PINNED, BooleanNode.TRUE);
@@ -104,7 +97,7 @@ public class ChecklistPluginNGTests  {
 	@Test
 	public void testWrapUnwrapAndPrepareChecklist() throws Exception {
 		ArrayNode  checklist = jsonMapper.createArrayNode();
-		ObjectNode item      = createChecklistItem(null, "Do something", "Example checklist item", true, false, true, false);
+		ObjectNode item      = createChecklistItem(null, "Do something\n>>\nExample checklist item", true, false, true, false);
 
 		checklist.add(item);
 
@@ -137,10 +130,10 @@ public class ChecklistPluginNGTests  {
 		when(context.getUser()).thenReturn(user);
 		
 		ArrayNode  checklist 	= jsonMapper.createArrayNode();
-		ObjectNode globalHeader = createChecklistItem(Integer.valueOf(1), "!5 Global items", "These are __global__ options", true, true, false, false);
-		ObjectNode globalItem 	= createChecklistItem(Integer.valueOf(2), "Check regulations", "Check regulatory compliance", true, false, true, false);
-		ObjectNode localHeader  = createChecklistItem(Integer.valueOf(4), "!5 Item specific", "These are __local__ items", false, true, false, false);
-		ObjectNode localItem    = createChecklistItem(Integer.valueOf(4), "Design solution", null, false, false, true, false);
+		ObjectNode globalHeader = createChecklistItem(Integer.valueOf(1), "!5 Global items\n>>\nThese are __global__ options", true, true, false, false);
+		ObjectNode globalItem 	= createChecklistItem(Integer.valueOf(2), "Check regulations\n>>\nCheck regulatory compliance", true, false, true, false);
+		ObjectNode localHeader  = createChecklistItem(Integer.valueOf(4), "!5 Item specific\n>>\nThese are __local__ items", false, true, false, false);
+		ObjectNode localItem    = createChecklistItem(Integer.valueOf(4), "Design solution", false, false, true, false);
 
 		checklist.add(globalHeader);
 		checklist.add(globalItem);
@@ -195,7 +188,6 @@ public class ChecklistPluginNGTests  {
 
 			// First 3 items must have a description link
 			if (idx <= 3) {
-				assertNotNull(descLink, idx + ". item must have a description link");
 				assertNull(status, idx + ". item must not have a status");
 				assertNull(dueDate, idx + ". item must not have a due date");
 			} else {

@@ -23,8 +23,7 @@
 					<td class="checklistItemLabel">
 						#if($!checklistItem.description)
 							<a href="#" class="checklistItemDescription show" title="Show/Hide description"></a>
-						#end
-						
+						#end					
 						$textFormatter.format($checklistItem.name, "W", $wikiContext)
 					</td>
 				#end
