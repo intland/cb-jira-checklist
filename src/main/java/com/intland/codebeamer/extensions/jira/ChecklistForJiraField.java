@@ -47,8 +47,6 @@ import com.intland.codebeamer.wiki.plugins.ChecklistPlugin;
 @CustomField(type = "WikiText", of = "Checklist")
 public class ChecklistForJiraField extends AbstractJsonController {
 	private static final Logger logger = Logger.getLogger(ChecklistForJiraField.class);
-
-	public static final String RANK = "rank";
 	public static final String IS_HEADER = "isHeader";
 	public static final String NONE = "none";
 
@@ -72,10 +70,6 @@ public class ChecklistForJiraField extends AbstractJsonController {
 			for (JsonNode item : checklist) {
 				if (item != null && item.isObject()) {
 					ObjectNode itemNode = (ObjectNode) item;
-
-					// We don't need the rank, and it's read-only anyways
-					itemNode.remove(RANK);
-
 					if (getBoolean(itemNode.remove(IS_HEADER), null)) {
 						itemNode.set(HEADER, BooleanNode.TRUE);
 					}
