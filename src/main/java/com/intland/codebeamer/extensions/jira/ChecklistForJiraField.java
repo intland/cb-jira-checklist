@@ -15,17 +15,13 @@ import static com.intland.codebeamer.extensions.jira.ChecklistForJiraMarkup.cb2c
 import static com.intland.codebeamer.extensions.jira.ChecklistForJiraMarkup.checklist2cb;
 import static com.intland.codebeamer.manager.util.TrackerSyncConfigurationDto.NAME;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.HEADER;
-import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.PINNED;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.unwrapChecklist;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.wrapChecklist;
-
-import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.BooleanNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
@@ -33,8 +29,6 @@ import com.intland.codebeamer.controller.AbstractJsonController;
 import com.intland.codebeamer.controller.jira.CustomField;
 import com.intland.codebeamer.controller.jira.JiraImportController;
 import com.intland.codebeamer.controller.jira.JiraTrackerSyncConfig;
-import com.intland.codebeamer.manager.util.ImportStatistics;
-import com.intland.codebeamer.manager.util.ImporterSupport;
 import com.intland.codebeamer.manager.util.TrackerItemHistoryConfiguration;
 import com.intland.codebeamer.persistence.dto.TrackerItemDto;
 import com.intland.codebeamer.persistence.dto.TrackerLayoutLabelDto;
@@ -56,8 +50,6 @@ public class ChecklistForJiraField extends AbstractJsonController {
 
 	public static final String RANK = "rank";
 	public static final String IS_HEADER = "isHeader";
-	public static final String OPTION = "option"; // ChecklistForJira V4 and older
-	public static final String GLOBAL_ID = "globalItemId"; // ChecklistForJira V5 and newer
 	public static final String NONE = "none";
 
 
@@ -88,11 +80,6 @@ public class ChecklistForJiraField extends AbstractJsonController {
 						itemNode.set(HEADER, BooleanNode.TRUE);
 					}
 
-					// In Checklist for JIRA V5.0, OPTION is deprecated and replaced by OPTION_ID
-					if (getInteger(item, GLOBAL_ID) != null || getBoolean(itemNode.remove(OPTION), null)) {
-						itemNode.set(PINNED, BooleanNode.TRUE);
-					}
-
 					itemNode.set(NAME, TextNode.valueOf(checklist2cb(check4ByteChars(controller, getString(item, NAME)))));
 				}
 			}
@@ -118,11 +105,6 @@ public class ChecklistForJiraField extends AbstractJsonController {
 
 					if (getBoolean(itemNode.remove(HEADER), null)) {
 						itemNode.set(IS_HEADER, BooleanNode.TRUE);
-					}
-
-					// In Checklist for JIRA V5.0, OPTION is deprecated and replaced by OPTION_ID
-					if (getBoolean(itemNode.remove(PINNED), null) && getInteger(item, GLOBAL_ID) == null) {
-						itemNode.set(OPTION, BooleanNode.TRUE);
 					}
 
 					itemNode.set(NAME, TextNode.valueOf(cb2checklist(getString(item, NAME))));
@@ -185,30 +167,6 @@ public class ChecklistForJiraField extends AbstractJsonController {
 		return cb2jira(tracker, unwrapChecklist(markup));
 	}
 
-	/**
-	 * Get the {@link ChecklistPlugin} body, that is stored in the specified field
-	 * of the specified item
-	 * 
-	 * @param tracker is the tracker sync configuration
-	 * @param item    is the tracker item, that contains the checklist field value,
-	 *                or null, to use field default value
-	 * @param field   is the Wiki field, that contains {@link ChecklistPlugin}
-	 *                markup
-	 * @return the {@link ChecklistPlugin} body, that is stored in the specified
-	 *         field of the specified item, or null
-	 */
-	public static JsonNode getChecklist(JiraTrackerSyncConfig tracker, TrackerItemDto item,
-			TrackerLayoutLabelDto field) {
-		JsonNode checklist = null;
-
-		if (field != null && field.isWikiTextField()) {
-			if ((checklist = unwrapChecklist((String) field.getValue(item))) == null) {
-				checklist = unwrapChecklist(tracker.getFieldDefaultValue(field, null));
-			}
-		}
-
-		return checklist;
-	}
 
 	/*
 	 * Importing checklist history is not supported.

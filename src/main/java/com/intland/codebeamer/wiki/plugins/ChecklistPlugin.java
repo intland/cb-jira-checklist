@@ -72,7 +72,6 @@ public class ChecklistPlugin extends AbstractCodeBeamerWikiPlugin {
 	public static final String PLUGIN_HEADER = "[{Checklist\r\n\r\n";
 	public static final String PLUGIN_FOOTER = "\r\n}]";
 
-	public static final String PINNED 		= "pinned";
 	public static final String HEADER 		= "header";
 	public static final String MANDATORY 	= "mandatory";
 	public static final String CHECKED 	 	= "checked";

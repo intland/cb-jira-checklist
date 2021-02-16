@@ -33,14 +33,6 @@ td.checklistItemChecked {
 	vertical-align: top;
 }
 
-td.checklistItemPinned {
-	margin: 0px 0px 0px 0px;
-	width: 10px;
-	background-image: url("../../../../../images/newskin/action/icon_pin_grey.png");
-	background-repeat: no-repeat;
-	background-position-y: 5px; 
-}
-
 td.checklistItemLabel {
 	width: 95%;
 	text-align: left;
@@ -53,31 +45,3 @@ td.checklistHeader {
 	padding-left: 0px !Important;
 	padding-right: 0px !Important;
 }
-
-td.checklistItemDescription {
-	vertical-align: top;
-	text-align: left;
-	padding-left: 0px !Important;
-	padding-right: 0px !Important;
-}
-
-a.checklistItemDescription {
-	margin-left: 5px;
-	margin-right: 5px;
-	background-repeat: no-repeat;
-	float: right;
-	width: 16px;
-	height: 16px;
-	background-position-y: 5px; 
-}
-
-a.checklistItemDescription.show {
-	background-image: url("../../../../../images/newskin/action/diff-expand.png");
-}
-
-a.checklistItemDescription.hide {
-	background-image: url("../../../../../images/newskin/action/diff-collapse.png");
-}
-
-
-

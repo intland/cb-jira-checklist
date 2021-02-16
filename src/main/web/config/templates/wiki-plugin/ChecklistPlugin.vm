@@ -8,8 +8,6 @@
 	<tbody>
 		#foreach($checklistItem in $checklist)
 			<tr class="checklistItem #if($!checklistItem.header)header#end">
-				<td #if($!checklistItem.pinned)class="checklistItemPinned"#end></td>
-				
 				#if($!checklistItem.header)
 					<td class="checklistHeader" colspan=2>
 						#if($!checklistItem.description)

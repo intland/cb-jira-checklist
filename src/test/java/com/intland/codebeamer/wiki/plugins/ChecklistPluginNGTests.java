@@ -18,7 +18,6 @@ import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.BODY;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.CHECKED;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.HEADER;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.MANDATORY;
-import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.PINNED;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.PLUGIN_FOOTER;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.PLUGIN_HEADER;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.prepareChecklist;
@@ -62,8 +61,7 @@ import com.intland.codebeamer.wiki.CodeBeamerWikiContext;
 @Test(groups = {"plugins"})
 public class ChecklistPluginNGTests  {
 
-	public static ObjectNode createChecklistItem(Integer id, String name, boolean pinned, boolean header,
-												 boolean mandatory, boolean checked) {
+	public static ObjectNode createChecklistItem(Integer id, String name, boolean header, boolean mandatory, boolean checked) {
 		assertNotNull(name, "Checklist item name required");
 
 		ObjectNode item = jsonMapper.createObjectNode();
@@ -73,10 +71,6 @@ public class ChecklistPluginNGTests  {
 		}
 
 		item.set(NAME, TextNode.valueOf(name));
-
-		if (pinned) {
-			item.set(PINNED, BooleanNode.TRUE);
-		}
 
 		if (header) {
 			item.set(HEADER, BooleanNode.TRUE);
@@ -97,7 +91,7 @@ public class ChecklistPluginNGTests  {
 	@Test
 	public void testWrapUnwrapAndPrepareChecklist() throws Exception {
 		ArrayNode  checklist = jsonMapper.createArrayNode();
-		ObjectNode item      = createChecklistItem(null, "Do something\n>>\nExample checklist item", true, false, true, false);
+		ObjectNode item      = createChecklistItem(null, "Do something\n>>\nExample checklist item", false, true, false);
 
 		checklist.add(item);
 
@@ -130,10 +124,10 @@ public class ChecklistPluginNGTests  {
 		when(context.getUser()).thenReturn(user);
 		
 		ArrayNode  checklist 	= jsonMapper.createArrayNode();
-		ObjectNode globalHeader = createChecklistItem(Integer.valueOf(1), "!5 Global items\n>>\nThese are __global__ options", true, true, false, false);
-		ObjectNode globalItem 	= createChecklistItem(Integer.valueOf(2), "Check regulations\n>>\nCheck regulatory compliance", true, false, true, false);
-		ObjectNode localHeader  = createChecklistItem(Integer.valueOf(4), "!5 Item specific\n>>\nThese are __local__ items", false, true, false, false);
-		ObjectNode localItem    = createChecklistItem(Integer.valueOf(4), "Design solution", false, false, true, false);
+		ObjectNode globalHeader = createChecklistItem(Integer.valueOf(1), "!5 Global items\n>>\nThese are __global__ options", true, false, false);
+		ObjectNode globalItem 	= createChecklistItem(Integer.valueOf(2), "Check regulations\n>>\nCheck regulatory compliance", false, true, false);
+		ObjectNode localHeader  = createChecklistItem(Integer.valueOf(4), "!5 Item specific\n>>\nThese are __local__ items", true, false, false);
+		ObjectNode localItem    = createChecklistItem(Integer.valueOf(4), "Design solution", false, true, false);
 
 		checklist.add(globalHeader);
 		checklist.add(globalItem);
