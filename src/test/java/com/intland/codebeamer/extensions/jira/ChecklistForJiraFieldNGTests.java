@@ -15,20 +15,13 @@ import static com.intland.codebeamer.controller.AbstractJsonController.getBoolea
 import static com.intland.codebeamer.controller.AbstractJsonController.getInteger;
 import static com.intland.codebeamer.controller.AbstractJsonController.getString;
 import static com.intland.codebeamer.controller.AbstractJsonController.jsonMapper;
-import static com.intland.codebeamer.extensions.jira.ChecklistForJiraField.ASSIGNEE_IDS;
 import static com.intland.codebeamer.extensions.jira.ChecklistForJiraField.DESC_SEP;
 import static com.intland.codebeamer.extensions.jira.ChecklistForJiraField.GLOBAL_ID;
 import static com.intland.codebeamer.extensions.jira.ChecklistForJiraField.IS_HEADER;
 import static com.intland.codebeamer.extensions.jira.ChecklistForJiraField.OPTION;
-import static com.intland.codebeamer.extensions.jira.ChecklistForJiraField.getChanges;
-import static com.intland.codebeamer.extensions.jira.ChecklistForJiraField.getChecklist;
-import static com.intland.codebeamer.extensions.jira.ChecklistForJiraField.getChecklists;
-import static com.intland.codebeamer.extensions.jira.ChecklistForJiraField.getOriginalItem;
-import static com.intland.codebeamer.extensions.jira.ChecklistForJiraField.setChecklist;
 import static com.intland.codebeamer.manager.util.TrackerSyncConfigurationDto.DESCRIPTION;
 import static com.intland.codebeamer.manager.util.TrackerSyncConfigurationDto.ID;
 import static com.intland.codebeamer.manager.util.TrackerSyncConfigurationDto.NAME;
-import static com.intland.codebeamer.persistence.util.PersistenceUtils.getToday;
 import static com.intland.codebeamer.persistence.util.TrackerItemFieldHandler.PRIORITY_LABEL_ID;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.CHECKED;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.HEADER;
@@ -37,13 +30,8 @@ import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.PINNED;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertNotSame;
-import static org.testng.Assert.assertNull;
-import static org.testng.Assert.assertSame;
 import static org.testng.Assert.assertTrue;
 
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -59,7 +47,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.intland.codebeamer.controller.jira.JiraImportController;
 import com.intland.codebeamer.controller.jira.JiraTrackerSyncConfig;
-import com.intland.codebeamer.extensions.jira.ChecklistForJiraField.Change;
 import com.intland.codebeamer.extensions.jira.ChecklistForJiraField.Checklist;
 import com.intland.codebeamer.manager.util.ImportStatistics;
 import com.intland.codebeamer.manager.util.ImporterSupport;
@@ -67,7 +54,6 @@ import com.intland.codebeamer.manager.util.TrackerItemHistoryConfiguration;
 import com.intland.codebeamer.persistence.dto.TrackerChoiceOptionDto;
 import com.intland.codebeamer.persistence.dto.TrackerItemDto;
 import com.intland.codebeamer.persistence.dto.TrackerLayoutLabelDto;
-import com.intland.codebeamer.wiki.plugins.ChecklistPlugin;
 import com.intland.codebeamer.wiki.plugins.ChecklistPluginNGTests;
 
 import net.sf.mpxj.CustomField;
@@ -180,7 +166,6 @@ public class ChecklistForJiraFieldNGTests {
 
 	@Test
 	public void testCb2jira() throws Exception {
-		Date	   tomorrow    = new Date(getToday(1).getTime());
 		ArrayNode  cbChecklist = jsonMapper.createArrayNode();
 		ObjectNode cbItem      = ChecklistPluginNGTests.createChecklistItem(Integer.valueOf(123), "Say ''Hallo''", "Otherwise you are a total __Jerk__!",  true, true, true, false);
 
@@ -240,55 +225,5 @@ public class ChecklistForJiraFieldNGTests {
 		return checklist;
 	}
 
-	
-
-	@Test
-	public void testChecklistCaching() throws Exception {
-		ImporterSupport importer = new ImporterSupport();
-
-		Map<Integer,JsonNode> cache = getChecklists(importer, false);
-		assertNull(cache, "Checklists cache");
-
-		cache = getChecklists(importer, true);
-		assertNotNull(cache, "Checklists cache");
-
-		TrackerItemDto item = new TrackerItemDto(Integer.valueOf(1000));
-
-		TrackerLayoutLabelDto field = new TrackerLayoutLabelDto(TrackerLayoutLabelDto.getCustomFieldId(0), "DoD");
-		field.setInputType(TrackerLayoutLabelDto.WIKITEXT);
-
-		assertFalse(cache.containsKey(field.getId()), "Field checklist cached");
-
-		ArrayNode checklist = jsonMapper.createArrayNode();
-		checklist.add(ChecklistPluginNGTests.createChecklistItem(null, "!4 Test items", null, true, true, false, false));
-
-		field.setValue(item, ChecklistPlugin.wrapChecklist(checklist));
-
-		JsonNode checklist_ = getChecklist(tracker, item, field);
-		assertNotNull(checklist_, "Checklist stored in item field");
-		assertNotSame(checklist_, checklist, "Checklist stored in item field");
-		assertEquals(checklist_, checklist, "Checklist stored in item field");
-
-		ImportStatistics statistics = new ImportStatistics();
-		statistics.items(JiraTrackerSyncConfig.ISSUES, true).addUpdated(item, item);
-
-		TrackerItemDto item_ = getOriginalItem(item, statistics);
-		assertSame(item_, item, "Original item");
-
-		checklist_ = getChecklist(tracker, item, field, importer, statistics);
-		assertNotNull(checklist_, "Cached field checklist");
-		assertEquals(checklist_, checklist, "Cached field checklist");
-		assertTrue(cache.containsKey(field.getId()), "Field checklist cached");
-
-		checklist.add(ChecklistPluginNGTests.createChecklistItem(null, "Test item", null, true, false, true, false));
-
-		setChecklist(item, field, checklist, importer);
-
-		checklist_ = getChecklist(tracker, item, field, importer, statistics);
-		assertSame(checklist_, checklist, "Cached checklist");
-
-		adapter.resetChecklist(item, field, importer);
-		assertFalse(cache.containsKey(field.getId()), "Field checklist cached");
-	}
 
 }

@@ -103,7 +103,6 @@ public class ChecklistPluginNGTests  {
 
 	@Test
 	public void testWrapUnwrapAndPrepareChecklist() throws Exception {
-		Date	   tomorrow  = new Date(getToday(1).getTime());
 		ArrayNode  checklist = jsonMapper.createArrayNode();
 		ObjectNode item      = createChecklistItem(null, "Do something", "Example checklist item", true, false, true, false);
 
