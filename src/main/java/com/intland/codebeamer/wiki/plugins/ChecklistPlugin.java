@@ -26,7 +26,6 @@ import com.ecyrd.jspwiki.WikiContext;
 import com.ecyrd.jspwiki.plugin.PluginException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.intland.codebeamer.controller.AbstractJsonController;
-import com.intland.codebeamer.persistence.dto.AttributedDto;
 import com.intland.codebeamer.wiki.plugins.base.AbstractCodeBeamerWikiPlugin;
 
 
@@ -79,21 +78,6 @@ public class ChecklistPlugin extends AbstractCodeBeamerWikiPlugin {
 	}
 
 	/**
-	 * Check and prepare the specified checklist item for rendering
-	 * @return true if the item is good for rendering, otherwise false
-	 */
-	public static boolean prepareChecklistItem(Map<String,Object> item) {
-		if (item != null) {
-			String name = AttributedDto.toString(item.get(NAME));
-			if (StringUtils.isNotBlank(name)) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	/**
 	 * Check and prepare the specified checklist items for rendering
 	 * @param items is a list of checklist items to prepare
 	 * @return a List of prepared checklist items
@@ -101,7 +85,8 @@ public class ChecklistPlugin extends AbstractCodeBeamerWikiPlugin {
 	public static List<Map<String,Object>> prepareChecklistItems(List<Map<String,Object>> items) {
 		if (items != null && items.size() > 0) {
 			for (Iterator<Map<String,Object>> it = items.iterator(); it.hasNext();) {
-				if (!prepareChecklistItem(it.next())) {
+				Object name = it.next().get(NAME);
+				if (name == null || StringUtils.isEmpty(name.toString())) {
 					it.remove();
 				}
 			}
