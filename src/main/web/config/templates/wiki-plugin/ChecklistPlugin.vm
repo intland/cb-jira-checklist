@@ -8,7 +8,7 @@
 	<tbody>
 		#foreach($checklistItem in $checklist)
 			<tr class="checklistItem">
-				<td class="checklistItemChecked#if($!checklistItem.mandatory) mandatory#end">
+				<td class="checklistItemChecked">
 					<input type="checkbox" #if($!checklistItem.checked)checked#end disabled/>
 				</td>
 				<td class="checklistItemLabel">				
