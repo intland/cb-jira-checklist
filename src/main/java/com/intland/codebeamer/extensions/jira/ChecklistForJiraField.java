@@ -11,8 +11,8 @@
  */
 package com.intland.codebeamer.extensions.jira;
 
-import static com.intland.codebeamer.controller.jira.ChecklistForJiraMarkup.cb2checklist;
-import static com.intland.codebeamer.controller.jira.ChecklistForJiraMarkup.checklist2cb;
+import static com.intland.codebeamer.extensions.jira.ChecklistForJiraMarkup.cb2checklist;
+import static com.intland.codebeamer.extensions.jira.ChecklistForJiraMarkup.checklist2cb;
 import static com.intland.codebeamer.controller.jira.JiraRestClient.decodeDate;
 import static com.intland.codebeamer.controller.jira.JiraRestClient.encodeDate;
 import static com.intland.codebeamer.manager.util.TrackerSyncConfigurationDto.DESCRIPTION;
