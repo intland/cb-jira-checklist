@@ -14,7 +14,6 @@ package com.intland.codebeamer.extensions.jira;
 import static com.intland.codebeamer.extensions.jira.ChecklistForJiraMarkup.cb2checklist;
 import static com.intland.codebeamer.extensions.jira.ChecklistForJiraMarkup.checklist2cb;
 import static com.intland.codebeamer.manager.util.TrackerSyncConfigurationDto.NAME;
-import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.HEADER;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.unwrapChecklist;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.wrapChecklist;
 
@@ -22,7 +21,6 @@ import org.apache.log4j.Logger;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.BooleanNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.intland.codebeamer.controller.AbstractJsonController;
@@ -47,9 +45,6 @@ import com.intland.codebeamer.wiki.plugins.ChecklistPlugin;
 @CustomField(type = "WikiText", of = "Checklist")
 public class ChecklistForJiraField extends AbstractJsonController {
 	private static final Logger logger = Logger.getLogger(ChecklistForJiraField.class);
-	public static final String IS_HEADER = "isHeader";
-	public static final String NONE = "none";
-
 
 	public static String check4ByteChars(JiraImportController controller, String string) {
 		return controller != null ? controller.check4ByteChars(string) : string;
@@ -70,10 +65,6 @@ public class ChecklistForJiraField extends AbstractJsonController {
 			for (JsonNode item : checklist) {
 				if (item != null && item.isObject()) {
 					ObjectNode itemNode = (ObjectNode) item;
-					if (getBoolean(itemNode.remove(IS_HEADER), null)) {
-						itemNode.set(HEADER, BooleanNode.TRUE);
-					}
-
 					itemNode.set(NAME, TextNode.valueOf(checklist2cb(check4ByteChars(controller, getString(item, NAME)))));
 				}
 			}
@@ -96,11 +87,6 @@ public class ChecklistForJiraField extends AbstractJsonController {
 			for (JsonNode item : checklist) {
 				if (item != null && item.isObject()) {
 					ObjectNode itemNode = (ObjectNode) item;
-
-					if (getBoolean(itemNode.remove(HEADER), null)) {
-						itemNode.set(IS_HEADER, BooleanNode.TRUE);
-					}
-
 					itemNode.set(NAME, TextNode.valueOf(cb2checklist(getString(item, NAME))));
 				}
 			}

@@ -14,22 +14,15 @@ package com.intland.codebeamer.extensions.jira;
 import static com.intland.codebeamer.controller.AbstractJsonController.getBoolean;
 import static com.intland.codebeamer.controller.AbstractJsonController.getString;
 import static com.intland.codebeamer.controller.AbstractJsonController.jsonMapper;
-import static com.intland.codebeamer.extensions.jira.ChecklistForJiraField.IS_HEADER;
 import static com.intland.codebeamer.manager.util.TrackerSyncConfigurationDto.ID;
 import static com.intland.codebeamer.manager.util.TrackerSyncConfigurationDto.NAME;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.CHECKED;
-import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.HEADER;
-import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.MANDATORY;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -40,7 +33,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.intland.codebeamer.controller.jira.JiraImportController;
 import com.intland.codebeamer.controller.jira.JiraTrackerSyncConfig;
-import com.intland.codebeamer.persistence.dto.TrackerChoiceOptionDto;
 import com.intland.codebeamer.wiki.plugins.ChecklistPluginNGTests;
 
 import net.sf.mpxj.CustomField;
@@ -60,33 +52,7 @@ public class ChecklistForJiraFieldNGTests {
 	private ChecklistForJiraField adapter = new ChecklistForJiraField();
 	private JiraTrackerSyncConfig tracker = new JiraTrackerSyncConfig();
 
-
-	@BeforeClass
-	public void setupJiraTrackerSyncConfig() {
-		TrackerChoiceOptionDto low    = new TrackerChoiceOptionDto(Integer.valueOf(4), "Low");
-		TrackerChoiceOptionDto normal = new TrackerChoiceOptionDto(Integer.valueOf(3), "Normal");
-		TrackerChoiceOptionDto high   = new TrackerChoiceOptionDto(Integer.valueOf(2), "High");
-
-		TrackerChoiceOptionDto jiraLow    = new TrackerChoiceOptionDto(Integer.valueOf(3), "Low");
-		TrackerChoiceOptionDto jiraMedium = new TrackerChoiceOptionDto(Integer.valueOf(2), "Medium");
-		TrackerChoiceOptionDto jiraHigh   = new TrackerChoiceOptionDto(Integer.valueOf(1), "High");
-
-		Map<Object,TrackerChoiceOptionDto> jira2cb = new HashMap<Object,TrackerChoiceOptionDto>(8);
-
-		jira2cb.put(jiraLow.getId(), 	  low);
-		jira2cb.put(jiraLow.getName(),    low);
-		jira2cb.put(jiraMedium.getId(),   normal);
-		jira2cb.put(jiraMedium.getName(), normal);
-		jira2cb.put(jiraHigh.getId(),     high);
-		jira2cb.put(jiraHigh.getName(),   high);
-
-		Map<Integer,TrackerChoiceOptionDto> cb2jira= new HashMap<Integer,TrackerChoiceOptionDto>(4);
-		cb2jira.put(low.getId(), 	jiraLow);
-		cb2jira.put(normal.getId(), jiraMedium);
-		cb2jira.put(high.getId(),   jiraHigh);
-	}
-
-	public static ObjectNode createChecklistItem(Integer id, String name, boolean header, boolean mandatory, boolean checked) {
+	public static ObjectNode createChecklistItem(Integer id, String name, boolean checked) {
 		assertNotNull(name, "Checklist item name required");
 
 		ObjectNode item = jsonMapper.createObjectNode();
@@ -97,15 +63,6 @@ public class ChecklistForJiraFieldNGTests {
 
 		
 		item.set(NAME, TextNode.valueOf(name));
-		
-
-		if (header) {
-			item.set(IS_HEADER, BooleanNode.TRUE);
-		}
-
-		if (mandatory) {
-			item.set(MANDATORY, BooleanNode.TRUE);
-		}
 
 		if (checked) {
 			item.set(CHECKED, BooleanNode.TRUE);
@@ -118,7 +75,7 @@ public class ChecklistForJiraFieldNGTests {
 	@Test
 	public void testJira2cb() throws Exception {
 		ArrayNode  checklist = jsonMapper.createArrayNode();
-		ObjectNode item      = createChecklistItem(Integer.valueOf(1), "Do *something*\n>>\nAn **Example** checklist item", false, true, false);
+		ObjectNode item      = createChecklistItem(Integer.valueOf(1), "Do *something*\n>>\nAn **Example** checklist item", false);
 
 		checklist.add(item);
 
@@ -130,8 +87,6 @@ public class ChecklistForJiraFieldNGTests {
 		for (JsonNode cbItem : cbChecklist) {
 			assertTrue(cbItem != null && cbItem.isObject(), "Converted CB checklist item");
 			assertEquals(getString(cbItem, NAME), "Do ''something''\n>>\nAn __Example__ checklist item", "Converted CB checklist name\n>>");
-			assertFalse(getBoolean(cbItem, HEADER),    "Converted CB checklist item header");
-			assertTrue (getBoolean(cbItem, MANDATORY), "Converted CB checklist item mandatory");
 			assertFalse(getBoolean(cbItem, CHECKED),   "Converted CB checklist item checked");
 		}
 	}
@@ -139,7 +94,7 @@ public class ChecklistForJiraFieldNGTests {
 	@Test
 	public void testCb2jira() throws Exception {
 		ArrayNode  cbChecklist = jsonMapper.createArrayNode();
-		ObjectNode cbItem      = ChecklistPluginNGTests.createChecklistItem(Integer.valueOf(123), "Say ''Hallo''\n>>\nOtherwise you are a total __Jerk__!",  true, true, false);
+		ObjectNode cbItem      = ChecklistPluginNGTests.createChecklistItem(Integer.valueOf(123), "Say ''Hallo''\n>>\nOtherwise you are a total __Jerk__!",  false);
 
 		cbChecklist.add(cbItem);
 
@@ -152,8 +107,6 @@ public class ChecklistForJiraFieldNGTests {
 			assertTrue(item != null && item.isObject(), "Converted Jira checklist item");
 
 			assertEquals(getString(item, NAME), "Say *Hallo*\n>>\nOtherwise you are a total **Jerk**!", "Converted Jira checklist name");
-			assertTrue (getBoolean(item, IS_HEADER), "Converted Jira checklist item header");
-			assertTrue (getBoolean(item, MANDATORY), "Converted Jira checklist item mandatory");
 			assertFalse(getBoolean(item, CHECKED),   "Converted Jira checklist item checked");
 		}
 	}
@@ -161,7 +114,7 @@ public class ChecklistForJiraFieldNGTests {
 	@Test(dependsOnMethods = {"testJira2cb", "testCb2jira"})
 	public void testImportExportChecklist() throws Exception {
 		ArrayNode  checklist = jsonMapper.createArrayNode();
-		ObjectNode item_     = createChecklistItem(Integer.valueOf(7), "Do *something*\n>>\nAn **Example** checklist item", true, true, true);
+		ObjectNode item_     = createChecklistItem(Integer.valueOf(7), "Do *something*\n>>\nAn **Example** checklist item", true);
 
 		checklist.add(item_);
 
@@ -177,8 +130,6 @@ public class ChecklistForJiraFieldNGTests {
 			assertTrue(item != null && item.isObject(), "Exported Jira checklist item");
 
 			assertEquals(getString(item, NAME), "Do *something*\n>>\nAn **Example** checklist item", "Exported Jira checklist name");
-			assertTrue(getBoolean(item, IS_HEADER), "Exported Jira checklist item header");
-			assertTrue(getBoolean(item, MANDATORY), "Exported Jira checklist item mandatory");
 			assertTrue(getBoolean(item, CHECKED),   "Exported Jira checklist item checked");
 		}
 	}

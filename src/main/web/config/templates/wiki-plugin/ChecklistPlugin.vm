@@ -7,56 +7,14 @@
 <table class="checklist tbd">
 	<tbody>
 		#foreach($checklistItem in $checklist)
-			<tr class="checklistItem #if($!checklistItem.header)header#end">
-				#if($!checklistItem.header)
-					<td class="checklistHeader" colspan=2>
-						#if($!checklistItem.description)
-							<a href="#" class="checklistItemDescription show"></a>
-						#end
-						
-						$textFormatter.format($checklistItem.name, "W", $wikiContext)
-					</td>
-				#else
-					<td class="checklistItemChecked #if($!checklistItem.mandatory)mandatory#end"><input type="checkbox" #if($!checklistItem.checked)checked#end disabled/></td>
-					<td class="checklistItemLabel">
-						#if($!checklistItem.description)
-							<a href="#" class="checklistItemDescription show" title="Show/Hide description"></a>
-						#end					
-						$textFormatter.format($checklistItem.name, "W", $wikiContext)
-					</td>
-				#end
+			<tr class="checklistItem">
+				<td class="checklistItemChecked#if($!checklistItem.mandatory) mandatory#end">
+					<input type="checkbox" #if($!checklistItem.checked)checked#end disabled/>
+				</td>
+				<td class="checklistItemLabel">				
+					$textFormatter.format($checklistItem.name, "W", $wikiContext)
+				</td>
 			</tr>
-
-			#if($!checklistItem.description)
-				<tr class="checklistItemDescription"> 
-					<td colspan=2></td>
-					<td class="checklistItemDescription">$textFormatter.format($checklistItem.description, "W", $wikiContext)</td>
-				</tr>
-			#end
 		#end
 	</tbody>
 </table>
-
-## TODO support expanding/collapsing headers according to  
-## <a href="https://okapya.atlassian.net/wiki/spaces/CHKDOC5/pages/1965752439/Creating+and+manipulating+headers">Expanding and collapsing headers<a>
-## e.g. by using the treetable() JQuery plugin 
-
-<script type="text/javascript">
-	$('a.checklistItemDescription').click(function(event) {
-		event.preventDefault();
-		
-		var elem = $(this);
-		var desc = elem.closest('tr.checklistItem').next('tr.checklistItemDescription');
-		
-		if (elem.hasClass('show')) {
-			desc.show();
-		} else {
-			desc.hide();
-		}
-		
-		elem.toggleClass('show hide');
-		
-		return false;
-	});	
-  
-</script>

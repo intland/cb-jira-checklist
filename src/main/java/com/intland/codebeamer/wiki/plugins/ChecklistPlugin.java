@@ -11,18 +11,12 @@
  */
 package com.intland.codebeamer.wiki.plugins;
 
-import static com.intland.codebeamer.manager.util.TrackerSyncConfigurationDto.DESCRIPTION;
 import static com.intland.codebeamer.manager.util.TrackerSyncConfigurationDto.NAME;
-import static com.intland.codebeamer.manager.util.TrackerSyncConfigurationDto.STYLE;
-import static com.intland.codebeamer.utils.AnchoredPeriod.TODAY;
 
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -32,36 +26,12 @@ import com.ecyrd.jspwiki.WikiContext;
 import com.ecyrd.jspwiki.plugin.PluginException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.intland.codebeamer.controller.AbstractJsonController;
-import com.intland.codebeamer.manager.util.TrackerSyncConfigurationDto;
 import com.intland.codebeamer.persistence.dto.AttributedDto;
-import com.intland.codebeamer.persistence.dto.TrackerChoiceOptionDto;
-import com.intland.codebeamer.persistence.dto.TrackerItemDto;
-import com.intland.codebeamer.persistence.dto.UserDto;
-import com.intland.codebeamer.persistence.dto.base.DescribeableDto;
-import com.intland.codebeamer.persistence.dto.base.NamedDto;
-import com.intland.codebeamer.persistence.util.PersistenceUtils;
-import com.intland.codebeamer.utils.AnchoredPeriod.Edge;
 import com.intland.codebeamer.wiki.plugins.base.AbstractCodeBeamerWikiPlugin;
 
 
 /**
  * A Wiki Plugin to render a Checklist, that is defined as a JSON array of checklist items, in the plugin body into an appropriate HTML table.<br/>
- *
- * <p>Each checklist item is a JSON view of a {@link TrackerItemDto}, where currently only the following attributes are used <ul>
- *   <li>{@link TrackerSyncConfigurationDto#ID}</li>
- *   <li>{@link TrackerSyncConfigurationDto#NAME}</li>
- *   <li>{@link TrackerSyncConfigurationDto#DESCRIPTION}</li>
- *   <li>{@link #PRIORITY}</li>
- *   <li>{@link #STATUS}</li>
- *   <li>{@link #END_DATE}</li>
- * </ul></p>
- *
- * <p>Each checklist item also has additional checklist specific boolean attributes (a missing attribute means false) <ul>
- *   <li>{@link #PINNED} - whether this item should be pinned, so that it cannot be removed or re-positioned </li>
- *   <li>{@link #HEADER} - whether this item is a header item</li>
- *   <li>{@link #MANDATORY} - whether this item is a mandatory item or not</li>
- *   <li>{@link #CHECKED} - whether this item is checked or not</li>
- * </ul></p>
  *
  * @author <a href="mailto:Klaus.Mehling@intland.com">Klaus Mehling</a>
  * @since Dorothy
@@ -72,8 +42,6 @@ public class ChecklistPlugin extends AbstractCodeBeamerWikiPlugin {
 	public static final String PLUGIN_HEADER = "[{Checklist\r\n\r\n";
 	public static final String PLUGIN_FOOTER = "\r\n}]";
 
-	public static final String HEADER 		= "header";
-	public static final String MANDATORY 	= "mandatory";
 	public static final String CHECKED 	 	= "checked";
 
 	/**
@@ -162,7 +130,6 @@ public class ChecklistPlugin extends AbstractCodeBeamerWikiPlugin {
 	 */
 	@Override
 	public String execute(WikiContext context, Map params) throws PluginException {
-		UserDto user = getUserFromContext(context);
 		String  body = (String) params.get("_body");
 
 		VelocityContext velocityContext = getDefaultVelocityContextFromContext(context);
