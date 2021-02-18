@@ -8,3 +8,8 @@ The extension is based on the [Add-on field type API](https://codebeamer.com/cb/
 
 ## Usage
 After installation the you should be able to map checklist fields in the configuration.
+
+## Development
+Set variable cbHome e.g. in `%HOMEPATH%/.gradle/gradle.properties` to point to your local codeBeamer installation.
+
+Use `gradlew eclipse` or `gradlew idea` to create project configuration for your IDE.
