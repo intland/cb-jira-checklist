@@ -52,8 +52,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.intland.codebeamer.controller.jira.JiraImportController;
 import com.intland.codebeamer.controller.jira.JiraTrackerSyncConfig;
+import com.intland.codebeamer.manager.util.ImportStatistics;
 import com.intland.codebeamer.manager.util.ImporterSupport;
 import com.intland.codebeamer.manager.util.TrackerItemHistoryConfiguration;
+import com.intland.codebeamer.manager.util.TrackerItemNumbers;
 import com.intland.codebeamer.persistence.dto.TrackerItemDto;
 import com.intland.codebeamer.persistence.dto.TrackerItemRevisionDto;
 import com.intland.codebeamer.persistence.dto.TrackerLayoutLabelDto;
@@ -163,40 +165,54 @@ public class ChecklistForJiraFieldNGTests {
 		TrackerLayoutLabelDto field1 = new TrackerLayoutLabelDto(10000, "DoD", TrackerLayoutLabelDto.WIKITEXT);
 		TrackerLayoutLabelDto field2 = new TrackerLayoutLabelDto(10001, "Acceptance Criteria", TrackerLayoutLabelDto.WIKITEXT);
 		
-		TrackerItemDto item1 = new TrackerItemDto(1);
+		TrackerItemDto item1old = new TrackerItemDto(1);
+		item1old.setCustomField(0, "old");
+		item1old.setCustomField(1, "old");
+		
+		TrackerItemDto item2old = new TrackerItemDto(2);
+		item2old.setCustomField(0, "old");
+		item2old.setCustomField(1, "old");
+		
+		TrackerItemDto item1 = item1old.clone();
 		item1.setCustomField(0, "current");
 		item1.setCustomField(1, "current");
 		
-		TrackerItemDto item2 = new TrackerItemDto(2);
+		TrackerItemDto item2 = item2old.clone();
 		item2.setCustomField(0, "current");
 		item2.setCustomField(1, "current");
 		
+		TrackerItemNumbers numbers = new TrackerItemNumbers(true);
+		numbers.addUpdated(item1old, item1);
+		numbers.addUpdated(item2old, item2);
+		ImportStatistics statistics = new ImportStatistics();
+		statistics.put(JiraTrackerSyncConfig.ISSUES, numbers);
+
 		
 		ImporterSupport support = new ImporterSupport();
 		
-		TrackerItemHistoryConfiguration item1Field1Change1 = buildHistory(item1, field1, support);
+		TrackerItemHistoryConfiguration item1Field1Change1 = buildHistory(item1, field1, support, statistics);
 		assertEquals(item1Field1Change1.getField(), field1);
-		assertEquals(item1Field1Change1.getOldValue(), "current");
+		assertEquals(item1Field1Change1.getOldValue(), "old");
 		assertEquals(item1Field1Change1.getNewValue(), "current");
 		
-		TrackerItemHistoryConfiguration item2Field1Change1 = buildHistory(item2, field1, support);
+		TrackerItemHistoryConfiguration item2Field1Change1 = buildHistory(item2, field1, support, statistics);
 		assertEquals(item2Field1Change1.getField(), field1);
-		assertEquals(item2Field1Change1.getOldValue(), "current");
+		assertEquals(item2Field1Change1.getOldValue(), "old");
 		assertEquals(item2Field1Change1.getNewValue(), "current");
 		
-		TrackerItemHistoryConfiguration item1Field2Change1 = buildHistory(item1, field2, support);
+		TrackerItemHistoryConfiguration item1Field2Change1 = buildHistory(item1, field2, support, statistics);
 		assertEquals(item1Field2Change1.getField(), field2);
-		assertEquals(item1Field2Change1.getOldValue(), "current");
+		assertEquals(item1Field2Change1.getOldValue(), "old");
 		assertEquals(item1Field2Change1.getNewValue(), "current");
 		
-		TrackerItemHistoryConfiguration item1Field1Change2 = buildHistory(item1, field1, support);
+		TrackerItemHistoryConfiguration item1Field1Change2 = buildHistory(item1, field1, support, statistics);
 		assertNull(item1Field1Change2.getField());
 	}
 
 
-	private TrackerItemHistoryConfiguration buildHistory(TrackerItemDto item, TrackerLayoutLabelDto field, ImporterSupport support) {
+	private TrackerItemHistoryConfiguration buildHistory(TrackerItemDto item, TrackerLayoutLabelDto field, ImporterSupport support, ImportStatistics statistics) {
 		TrackerItemHistoryConfiguration fieldChange = new TrackerItemHistoryConfiguration(new TrackerItemRevisionDto(), field, "1", "2");
-		adapter.buildHistory(item, fieldChange, support);
+		adapter.buildHistory(item, fieldChange, support, statistics);
 		return fieldChange;
 	}
 

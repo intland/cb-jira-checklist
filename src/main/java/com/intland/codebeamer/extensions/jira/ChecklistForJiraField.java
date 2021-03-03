@@ -35,8 +35,9 @@ import static com.intland.codebeamer.manager.util.TrackerSyncConfigurationDto.NA
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.unwrapChecklist;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.wrapChecklist;
 
+import java.util.List;
+
 import org.apache.log4j.Logger;
-import org.apache.taglibs.standard.tag.common.core.ImportSupport;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -46,8 +47,12 @@ import com.intland.codebeamer.controller.AbstractJsonController;
 import com.intland.codebeamer.controller.jira.CustomField;
 import com.intland.codebeamer.controller.jira.JiraImportController;
 import com.intland.codebeamer.controller.jira.JiraTrackerSyncConfig;
+import com.intland.codebeamer.manager.util.ImportStatistics;
 import com.intland.codebeamer.manager.util.ImporterSupport;
+import com.intland.codebeamer.manager.util.Numbers;
+import com.intland.codebeamer.manager.util.TrackerItemDiff;
 import com.intland.codebeamer.manager.util.TrackerItemHistoryConfiguration;
+import com.intland.codebeamer.manager.util.TrackerItemNumbers;
 import com.intland.codebeamer.persistence.dto.TrackerItemDto;
 import com.intland.codebeamer.persistence.dto.TrackerLayoutLabelDto;
 import com.intland.codebeamer.wiki.plugins.ChecklistPlugin;
@@ -167,17 +172,35 @@ public class ChecklistForJiraField extends AbstractJsonController {
 		return cb2jira(tracker, unwrapChecklist(markup));
 	}
 
+	//"Compress" history, only return one entry
 	@CustomField.ImportFieldChange
-	public void buildHistory(TrackerItemDto item, TrackerItemHistoryConfiguration fieldChange, ImporterSupport support) {
+	public void buildHistory(TrackerItemDto item, TrackerItemHistoryConfiguration fieldChange, ImporterSupport support, ImportStatistics statistic) {
 		TrackerLayoutLabelDto field = fieldChange.getField();
 		if(support.containsKey(getKey(item, field))) {
 			fieldChange.setField(null); //Ignore second update
 		} else {
-			Object newValue = field.getValue(item);
-			fieldChange.setOldValueObject(newValue);
-			fieldChange.setNewValueObject(newValue);
+			fieldChange.setOldValueObject(field.getValue(getOriginalItem(item, statistic)));
+			fieldChange.setNewValueObject(field.getValue(item));
 			support.put(getKey(item, field), false);
 		}
+	}
+	
+	private static TrackerItemDto getOriginalItem(TrackerItemDto item, ImportStatistics statistic) {
+		if (item != null && item.getId() != null && statistic != null) {
+			Numbers numbers = statistic.get(JiraTrackerSyncConfig.ISSUES);
+			if (numbers instanceof TrackerItemNumbers) {
+				List<TrackerItemDiff> updatedItems = ((TrackerItemNumbers) numbers).getUpdatedItems();
+				if (updatedItems != null && updatedItems.size() > 0) {
+					for (TrackerItemDiff updated : updatedItems) {
+						if (item.getId().equals(updated.getId())) {
+							return updated.getOriginal();
+						}
+					}
+				}
+			}
+		}
+
+		return null;
 	}
 
 
