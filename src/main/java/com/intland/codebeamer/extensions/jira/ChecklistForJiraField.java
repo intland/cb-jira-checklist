@@ -36,6 +36,7 @@ import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.unwrapChecklis
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.wrapChecklist;
 
 import org.apache.log4j.Logger;
+import org.apache.taglibs.standard.tag.common.core.ImportSupport;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -45,6 +46,7 @@ import com.intland.codebeamer.controller.AbstractJsonController;
 import com.intland.codebeamer.controller.jira.CustomField;
 import com.intland.codebeamer.controller.jira.JiraImportController;
 import com.intland.codebeamer.controller.jira.JiraTrackerSyncConfig;
+import com.intland.codebeamer.manager.util.ImporterSupport;
 import com.intland.codebeamer.manager.util.TrackerItemHistoryConfiguration;
 import com.intland.codebeamer.persistence.dto.TrackerItemDto;
 import com.intland.codebeamer.persistence.dto.TrackerLayoutLabelDto;
@@ -165,19 +167,22 @@ public class ChecklistForJiraField extends AbstractJsonController {
 		return cb2jira(tracker, unwrapChecklist(markup));
 	}
 
-
-	/*
-	 * Importing checklist history is not supported.
-	 * Pretend the new value was always present.
-	 * History cleanup will take care of the rest.
-	 * Checklist change will show up as first revision imported currently.
-	 */
 	@CustomField.ImportFieldChange
-	public void buildHistory(TrackerItemDto item, TrackerLayoutLabelDto field, TrackerItemHistoryConfiguration fieldChange) {
-		Object newValue = field.getValue(item);
-		fieldChange.setOldValueObject(newValue);
-		fieldChange.setNewValueObject(newValue);
+	public void buildHistory(TrackerItemDto item, TrackerItemHistoryConfiguration fieldChange, ImporterSupport support) {
+		TrackerLayoutLabelDto field = fieldChange.getField();
+		if(support.containsKey(getKey(item, field))) {
+			fieldChange.setField(null); //Ignore second update
+		} else {
+			Object newValue = field.getValue(item);
+			fieldChange.setOldValueObject(newValue);
+			fieldChange.setNewValueObject(newValue);
+			support.put(getKey(item, field), false);
+		}
+	}
 
+
+	private String getKey(TrackerItemDto item, TrackerLayoutLabelDto field) {
+		return String.format("%s-%s.%s", this.getClass().getName(), item.getId(), field.getId());
 	}
 
 	@Override

@@ -38,6 +38,7 @@ import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.CHECKED;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +52,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.intland.codebeamer.controller.jira.JiraImportController;
 import com.intland.codebeamer.controller.jira.JiraTrackerSyncConfig;
+import com.intland.codebeamer.manager.util.ImporterSupport;
+import com.intland.codebeamer.manager.util.TrackerItemHistoryConfiguration;
+import com.intland.codebeamer.persistence.dto.TrackerItemDto;
+import com.intland.codebeamer.persistence.dto.TrackerItemRevisionDto;
+import com.intland.codebeamer.persistence.dto.TrackerLayoutLabelDto;
 import com.intland.codebeamer.wiki.plugins.ChecklistPluginNGTests;
 
 import net.sf.mpxj.CustomField;
@@ -150,6 +156,48 @@ public class ChecklistForJiraFieldNGTests {
 			assertEquals(getString(item, NAME), "Do *something*\n>>\nAn **Example** checklist item", "Exported Jira checklist name");
 			assertTrue(getBoolean(item, CHECKED),   "Exported Jira checklist item checked");
 		}
+	}
+	
+	@Test
+	public void testBuildHistory() {
+		TrackerLayoutLabelDto field1 = new TrackerLayoutLabelDto(10000, "DoD", TrackerLayoutLabelDto.WIKITEXT);
+		TrackerLayoutLabelDto field2 = new TrackerLayoutLabelDto(10001, "Acceptance Criteria", TrackerLayoutLabelDto.WIKITEXT);
+		
+		TrackerItemDto item1 = new TrackerItemDto(1);
+		item1.setCustomField(0, "current");
+		item1.setCustomField(1, "current");
+		
+		TrackerItemDto item2 = new TrackerItemDto(2);
+		item2.setCustomField(0, "current");
+		item2.setCustomField(1, "current");
+		
+		
+		ImporterSupport support = new ImporterSupport();
+		
+		TrackerItemHistoryConfiguration item1Field1Change1 = buildHistory(item1, field1, support);
+		assertEquals(item1Field1Change1.getField(), field1);
+		assertEquals(item1Field1Change1.getOldValue(), "current");
+		assertEquals(item1Field1Change1.getNewValue(), "current");
+		
+		TrackerItemHistoryConfiguration item2Field1Change1 = buildHistory(item2, field1, support);
+		assertEquals(item2Field1Change1.getField(), field1);
+		assertEquals(item2Field1Change1.getOldValue(), "current");
+		assertEquals(item2Field1Change1.getNewValue(), "current");
+		
+		TrackerItemHistoryConfiguration item1Field2Change1 = buildHistory(item1, field2, support);
+		assertEquals(item1Field2Change1.getField(), field2);
+		assertEquals(item1Field2Change1.getOldValue(), "current");
+		assertEquals(item1Field2Change1.getNewValue(), "current");
+		
+		TrackerItemHistoryConfiguration item1Field1Change2 = buildHistory(item1, field1, support);
+		assertNull(item1Field1Change2.getField());
+	}
+
+
+	private TrackerItemHistoryConfiguration buildHistory(TrackerItemDto item, TrackerLayoutLabelDto field, ImporterSupport support) {
+		TrackerItemHistoryConfiguration fieldChange = new TrackerItemHistoryConfiguration(new TrackerItemRevisionDto(), field, "1", "2");
+		adapter.buildHistory(item, fieldChange, support);
+		return fieldChange;
 	}
 
 
