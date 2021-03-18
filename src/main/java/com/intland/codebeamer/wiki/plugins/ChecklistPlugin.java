@@ -87,15 +87,6 @@ public class ChecklistPlugin extends AbstractCodeBeamerWikiPlugin {
 	}
 
 	/**
-	 * Unwrap the checklist, that is stored in the specified Wiki markup
-	 * @param markup should be WIKI markup for this plugin
-	 * @return the JSON array of checklist items as stored in the Wiki markup
-	 */
-	public static JsonNode unwrapChecklist(String markup) {
-		return BODY.parseJSON(StringUtils.substringBetween(markup, PLUGIN_HEADER, PLUGIN_FOOTER));
-	}
-
-	/**
 	 * Check and prepare the specified checklist items for rendering
 	 * @param items is a list of checklist items to prepare
 	 * @return a List of prepared checklist items
@@ -118,6 +109,7 @@ public class ChecklistPlugin extends AbstractCodeBeamerWikiPlugin {
 	 * @param checklist should be a JSON array of checklist items to prepare for rendering
 	 * @return the prepared checklist items as a List
 	 */
+	@SuppressWarnings("unchecked")
 	public static List<Map<String,Object>> prepareChecklist(JsonNode checklist) {
 		if (checklist != null && checklist.isArray()) {
 			return prepareChecklistItems(BODY.castJSON(checklist, List.class));
@@ -132,7 +124,7 @@ public class ChecklistPlugin extends AbstractCodeBeamerWikiPlugin {
 	 * @param params are the plugin parameters
 	 */
 	@Override
-	public String execute(WikiContext context, Map params) throws PluginException {
+	public String execute(WikiContext context, @SuppressWarnings("rawtypes") Map params) throws PluginException {
 		String  body = (String) params.get("_body");
 
 		VelocityContext velocityContext = getDefaultVelocityContextFromContext(context);

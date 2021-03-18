@@ -36,8 +36,6 @@ import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.BODY;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.CHECKED;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.PLUGIN_FOOTER;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.PLUGIN_HEADER;
-import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.prepareChecklist;
-import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.unwrapChecklist;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.wrapChecklist;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -47,8 +45,6 @@ import static org.testng.Assert.assertTrue;
 
 import java.io.File;
 import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -56,7 +52,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.testng.annotations.Test;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.BooleanNode;
 import com.fasterxml.jackson.databind.node.IntNode;
@@ -106,20 +101,6 @@ public class ChecklistPluginNGTests {
 				"Checklist markup wrapped into Checklist wiki plugin envelope");
 		assertTrue(checklistMarkup.endsWith(PLUGIN_FOOTER),
 				"Checklist markup wrapped into Checklist wiki plugin envelope");
-
-		JsonNode unwrapped = unwrapChecklist(checklistMarkup);
-		assertNotNull(unwrapped, "Unwrapped checklist");
-		assertTrue(unwrapped.isArray(), "Unwrapped checklist is array of checklist items");
-		assertEquals(unwrapped.size(), checklist.size(), "Unwrapped Checklist size");
-
-		JsonNode item_ = unwrapped.get(0);
-		assertNotNull(item_, "Unwapped checklist item");
-		assertTrue(item_.isObject(), "Unwrapped item is object");
-		assertEquals(item_, item, "Unwapped checklist item");
-
-		List<Map<String, Object>> prepared = prepareChecklist(unwrapped);
-		assertNotNull(prepared, "Prepared checklist");
-		assertEquals(prepared.size(), unwrapped.size(), "Prepared checklist size");
 	}
 
 	@Test(dependsOnMethods = "testWrapUnwrapAndPrepareChecklist")

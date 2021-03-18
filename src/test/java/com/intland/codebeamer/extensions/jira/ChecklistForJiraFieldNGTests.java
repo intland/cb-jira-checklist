@@ -59,7 +59,6 @@ import com.intland.codebeamer.manager.util.TrackerItemNumbers;
 import com.intland.codebeamer.persistence.dto.TrackerItemDto;
 import com.intland.codebeamer.persistence.dto.TrackerItemRevisionDto;
 import com.intland.codebeamer.persistence.dto.TrackerLayoutLabelDto;
-import com.intland.codebeamer.wiki.plugins.ChecklistPluginNGTests;
 
 import net.sf.mpxj.CustomField;
 
@@ -114,49 +113,6 @@ public class ChecklistForJiraFieldNGTests {
 			assertTrue(cbItem != null && cbItem.isObject(), "Converted CB checklist item");
 			assertEquals(getString(cbItem, NAME), "Do ''something''\n>>\nAn __Example__ checklist item", "Converted CB checklist name\n>>");
 			assertFalse(getBoolean(cbItem, CHECKED),   "Converted CB checklist item checked");
-		}
-	}
-
-	@Test
-	public void testCb2jira() throws Exception {
-		ArrayNode  cbChecklist = jsonMapper.createArrayNode();
-		ObjectNode cbItem      = ChecklistPluginNGTests.createChecklistItem(Integer.valueOf(123), "Say ''Hallo''\n>>\nOtherwise you are a total __Jerk__!",  false);
-
-		cbChecklist.add(cbItem);
-
-		JsonNode checklist = adapter.cb2jira(tracker, cbChecklist);
-
-		assertNotNull(checklist, "Converted Jira checklist");
-		assertEquals(checklist.size(), 1, "Number of converted checklist items");
-
-		for (JsonNode item : checklist) {
-			assertTrue(item != null && item.isObject(), "Converted Jira checklist item");
-
-			assertEquals(getString(item, NAME), "Say *Hallo*\n>>\nOtherwise you are a total **Jerk**!", "Converted Jira checklist name");
-			assertFalse(getBoolean(item, CHECKED),   "Converted Jira checklist item checked");
-		}
-	}
-
-	@Test(dependsOnMethods = {"testJira2cb", "testCb2jira"})
-	public void testImportExportChecklist() throws Exception {
-		ArrayNode  checklist = jsonMapper.createArrayNode();
-		ObjectNode item_     = createChecklistItem(Integer.valueOf(7), "Do *something*\n>>\nAn **Example** checklist item", true);
-
-		checklist.add(item_);
-
-		String imported = adapter.importChecklist(tracker, checklist, controller);
-		assertNotNull(imported, "Imported JIRA checklist Wiki markup");
-
-		JsonNode exported = adapter.exportChecklist(tracker, imported);
-
-		assertNotNull(exported, "Exported Jira checklist");
-		assertEquals(exported.size(), 1, "Number of exported checklist items");
-
-		for (JsonNode item : exported) {
-			assertTrue(item != null && item.isObject(), "Exported Jira checklist item");
-
-			assertEquals(getString(item, NAME), "Do *something*\n>>\nAn **Example** checklist item", "Exported Jira checklist name");
-			assertTrue(getBoolean(item, CHECKED),   "Exported Jira checklist item checked");
 		}
 	}
 	

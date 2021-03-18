@@ -29,10 +29,8 @@
  */
 package com.intland.codebeamer.extensions.jira;
 
-import static com.intland.codebeamer.extensions.jira.ChecklistForJiraMarkup.cb2checklist;
 import static com.intland.codebeamer.extensions.jira.ChecklistForJiraMarkup.checklist2cb;
 import static com.intland.codebeamer.manager.util.TrackerSyncConfigurationDto.NAME;
-import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.unwrapChecklist;
 import static com.intland.codebeamer.wiki.plugins.ChecklistPlugin.wrapChecklist;
 
 import java.util.List;
@@ -99,28 +97,6 @@ public class ChecklistForJiraField extends AbstractJsonController {
 	}
 
 	/**
-	 * Convert a {@link ChecklistPlugin} body into a <a href=
-	 * "https://okapya.atlassian.net/wiki/spaces/CHKDOC/pages/270172389/Modifying+Checklists+using+a+REST+API">Checklist
-	 * for JIRA<a>
-	 * 
-	 * @param tracker   is the JIRA tracker sync configuration
-	 * @param checklist is the {@link ChecklistPlugin} body
-	 * @return the converted {@link ChecklistPlugin} body
-	 */
-	public JsonNode cb2jira(JiraTrackerSyncConfig tracker, JsonNode checklist) {
-		if (checklist != null && checklist.isArray() && checklist.size() > 0) {
-			for (JsonNode item : checklist) {
-				if (item != null && item.isObject()) {
-					ObjectNode itemNode = (ObjectNode) item;
-					itemNode.set(NAME, TextNode.valueOf(cb2checklist(getString(item, NAME))));
-				}
-			}
-		}
-
-		return checklist;
-	}
-
-	/**
 	 * Configure a codeBeamer Wikitext field to contain a <a href=
 	 * "https://okapya.atlassian.net/wiki/spaces/CHKDOC/pages/270172389/Modifying+Checklists+using+a+REST+API">Checklist
 	 * for JIRA<a>
@@ -160,16 +136,9 @@ public class ChecklistForJiraField extends AbstractJsonController {
 		return wrapChecklist(jira2cb(tracker, checklist, controller));
 	}
 
-	/**
-	 * Unwrap the checklist, that is stored in the specified Wiki markup
-	 * 
-	 * @param tracker is the JIRA tracker sync configuration
-	 * @param markup  should be WIKI markup for this plugin
-	 * @return the JSON array of checklist items as stored in the Wiki markup
-	 */
 	@CustomField.ExportFieldValue
-	public JsonNode exportChecklist(JiraTrackerSyncConfig tracker, String markup) {
-		return cb2jira(tracker, unwrapChecklist(markup));
+	public String exportChecklist(JiraTrackerSyncConfig tracker, String markup) {
+		return "Exporting checklists is unsupprted."; //Setting the value will fail on Jira-side
 	}
 
 	//"Compress" history, only return one entry

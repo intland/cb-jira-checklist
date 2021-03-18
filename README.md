@@ -8,3 +8,7 @@ The extension is based on the [Add-on field type API](https://codebeamer.com/cb/
 
 ## Usage
 After installation the you should be able to map checklist fields in the configuration.
+
+## Limitations
+In the configuration UI it is possible to configure checklist fields for synchronization even so only importing is supported.
+Attempting to export checklist fields will result in errors updating the field.
